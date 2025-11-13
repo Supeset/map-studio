@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.22.0",
   "scripts": {
     "build": "nuxt build",
     "dev:pwa": "VITE_PLUGIN_PWA=true nuxt dev",
@@ -27,6 +27,8 @@
     "@vite-pwa/nuxt": "catalog:build",
     "@vueuse/core": "catalog:frontend",
     "@vueuse/nuxt": "catalog:build",
+    "astronomy-bundle": "catalog:dev",
+    "dayjs": "catalog:dev",
     "eslint": "catalog:dev",
     "eslint-plugin-format": "catalog:dev",
     "mapbox-gl": "catalog:frontend",

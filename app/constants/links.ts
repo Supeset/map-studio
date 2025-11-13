@@ -1,10 +1,19 @@
-interface ExternalLink {
+interface ToolLink {
   name: string
-  url: string
   icon: string
+  url?: string // 外部链接
+  to?: string // 内部路由
 }
 
-export const externalLinks: ExternalLink[] = [
+export const internalTools: ToolLink[] = [
+  {
+    name: '天文工具',
+    to: '/astro',
+    icon: 'i-carbon-sunrise',
+  },
+]
+
+export const externalLinks: ToolLink[] = [
   {
     name: '美国地震局',
     url: 'https://earthquake.usgs.gov/earthquakes/map/',

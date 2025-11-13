@@ -44,5 +44,6 @@ export default defineConfig({
     'i-carbon-document-download',
     'i-carbon-light',
     'i-carbon-bicycle',
+    'i-carbon-sunrise',
   ],
 })
