@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type Sun from 'astronomy-bundle/sun/Sun'
+import type TimeOfInterest from 'astronomy-bundle/time/TimeOfInterest'
 import type { FeatureCollection } from 'geojson'
 import type { GeoJSONSource, Map, MapMouseEvent } from 'mapbox-gl'
 import { createLocation } from 'astronomy-bundle/earth'
@@ -56,33 +58,102 @@ function calculateDestinationPoint(
   return [(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI]
 }
 /**
- * 在地图上更新或创建标记点和方位角线
+ * [精确解法] 计算给定时刻的日出/日落等时线 (Terminator Line)
+ * @param targetToi 目标时间点 (日出或日落的TOI对象)
+ * @param type 'rise' 或 'set'
+ * @returns 经纬度坐标数组
+ */
+async function calculateTerminatorLine(
+  targetToi: TimeOfInterest,
+  type: 'rise' | 'set',
+): Promise<[number, number][]> {
+  const coords: [number, number][] = []
+  // 为事件发生的精确时刻创建一个Sun实例，以获取该时刻的太阳坐标
+  const sunForCoords = createSun(targetToi)
+  const h0 = -0.833 // 日出/日落时太阳上边缘的标准地平高度
+
+  // 获取该时刻太阳的视赤经 (alpha) 和视赤纬 (delta)
+  const { rightAscension, declination } = await sunForCoords.getApparentGeocentricEquatorialSphericalCoordinates()
+  const delta = declination
+  const alpha = rightAscension
+
+  // 获取该时刻的格林尼治视恒星时 (GAST)
+  const GAST = targetToi.getGreenwichApparentSiderealTime()
+
+  // 迭代纬度，计算每个纬度上对应的经度
+  for (let lat = -85; lat <= 85; lat += 2) {
+    const phi = lat
+
+    // 将角度转换为弧度
+    const phiRad = (phi * Math.PI) / 180
+    const deltaRad = (delta * Math.PI) / 180
+    const h0Rad = (h0 * Math.PI) / 180
+
+    // 根据公式计算时角 H 的余弦值: cos(H) = (sin(h0) - sin(φ)sin(δ)) / (cos(φ)cos(δ))
+    const cosH = (Math.sin(h0Rad) - Math.sin(phiRad) * Math.sin(deltaRad)) / (Math.cos(phiRad) * Math.cos(deltaRad))
+
+    // 如果cosH超出[-1, 1]范围，说明该纬度处于极昼或极夜，无解
+    if (cosH > 1 || cosH < -1)
+      continue
+
+    // 计算时角 H (单位: 度)
+    let H = (Math.acos(cosH) * 180) / Math.PI
+
+    // 日出时，时角为负 (太阳在子午线以东)
+    if (type === 'rise')
+      H = -H
+
+    // 地方视恒星时 (LAST) = 视赤经 + 时角
+    const LAST = alpha + H
+
+    // 经度 (lon) = 地方视恒星时 - 格林尼治视恒星时
+    let lon = LAST - GAST
+
+    // 归一化经度到 -180 到 180
+    lon = (lon + 540) % 360 - 180
+
+    coords.push([lon, lat])
+  }
+
+  return coords
+}
+
+/**
+ * 在地图上更新或创建所有天文相关的可视化图层
  */
 function updateMapLayers(
   center: { lng: number, lat: number },
   sunriseInfo: { azimuth: number, time: string },
   sunsetInfo: { azimuth: number, time: string },
+  terminatorLines: { sunrise: [number, number][], sunset: [number, number][] },
 ) {
   const map = mapStore.mapInstance
   if (!map)
     return
 
-  // 根据地图缩放级别动态调整线的长度，使其在视觉上更合理
+  // 根据地图缩放级别动态调整方位角线的长度
   const distance = 8000 / (2 ** map.getZoom())
 
   const sunriseEndPoint = calculateDestinationPoint(center, sunriseInfo.azimuth, distance)
   const sunsetEndPoint = calculateDestinationPoint(center, sunsetInfo.azimuth, distance)
 
-  const geojson: FeatureCollection = {
-    type: 'FeatureCollection',
-    features: [
-      { type: 'Feature', geometry: { type: 'Point', coordinates: [center.lng, center.lat] }, properties: { type: 'center' } },
-      { type: 'Feature', geometry: { type: 'LineString', coordinates: [[center.lng, center.lat], sunriseEndPoint] }, properties: { type: 'sunrise' } },
-      { type: 'Feature', geometry: { type: 'LineString', coordinates: [[center.lng, center.lat], sunsetEndPoint] }, properties: { type: 'sunset' } },
-      { type: 'Feature', geometry: { type: 'Point', coordinates: sunriseEndPoint }, properties: { type: 'sunrise', text: `日出: ${sunriseInfo.time}\n${sunriseInfo.azimuth.toFixed(2)}°` } },
-      { type: 'Feature', geometry: { type: 'Point', coordinates: sunsetEndPoint }, properties: { type: 'sunset', text: `日落: ${sunsetInfo.time}\n${sunsetInfo.azimuth.toFixed(2)}°` } },
-    ],
-  }
+  const features = [
+    // --- 方位角相关的 Features ---
+    { type: 'Feature', geometry: { type: 'Point', coordinates: [center.lng, center.lat] }, properties: { type: 'center' } },
+    { type: 'Feature', geometry: { type: 'LineString', coordinates: [[center.lng, center.lat], sunriseEndPoint] }, properties: { type: 'azimuth-sunrise' } },
+    { type: 'Feature', geometry: { type: 'LineString', coordinates: [[center.lng, center.lat], sunsetEndPoint] }, properties: { type: 'azimuth-sunset' } },
+    { type: 'Feature', geometry: { type: 'Point', coordinates: sunriseEndPoint }, properties: { type: 'sunrise', text: `日出: ${sunriseInfo.time}\n${sunriseInfo.azimuth.toFixed(2)}°` } },
+    { type: 'Feature', geometry: { type: 'Point', coordinates: sunsetEndPoint }, properties: { type: 'sunset', text: `日落: ${sunsetInfo.time}\n${sunsetInfo.azimuth.toFixed(2)}°` } },
+  ]
+
+  // --- 等时线相关的 Features ---
+  if (terminatorLines.sunrise.length > 1)
+    features.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: terminatorLines.sunrise }, properties: { type: 'terminator-sunrise' } })
+
+  if (terminatorLines.sunset.length > 1)
+    features.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: terminatorLines.sunset }, properties: { type: 'terminator-sunset' } })
+
+  const geojson: FeatureCollection = { type: 'FeatureCollection', features: features as any }
 
   const source = map.getSource(SOURCE_ID) as GeoJSONSource
   if (source) {
@@ -90,6 +161,7 @@ function updateMapLayers(
   }
   else {
     map.addSource(SOURCE_ID, { type: 'geojson', data: geojson })
+    // --- 图层定义 ---
     map.addLayer({
       id: POINT_LAYER_ID,
       type: 'circle',
@@ -101,11 +173,11 @@ function updateMapLayers(
           'match',
           ['get', 'type'],
           'center',
-          '#0d9488', // 中心点使用主题色
+          '#0d9488',
           'sunrise',
-          '#f59e0b', // 日出点使用琥珀色
+          '#f59e0b',
           'sunset',
-          '#4f46e5', // 日落点使用靛蓝色
+          '#4f46e5',
           '#000000',
         ],
         'circle-stroke-width': 2,
@@ -120,14 +192,40 @@ function updateMapLayers(
         'line-color': [
           'match',
           ['get', 'type'],
-          'sunrise',
-          '#f59e0b', // 日出线
-          'sunset',
-          '#4f46e5', // 日落线
+          'azimuth-sunrise',
+          '#f59e0b',
+          'terminator-sunrise',
+          '#f59e0b',
+          'azimuth-sunset',
+          '#4f46e5',
+          'terminator-sunset',
+          '#4f46e5',
           '#000000',
         ],
-        'line-width': 2,
-        'line-dasharray': [2, 2],
+        'line-width': [
+          'match',
+          ['get', 'type'],
+          ['azimuth-sunrise', 'azimuth-sunset'],
+          2,
+          ['terminator-sunrise', 'terminator-sunset'],
+          2.5,
+          2,
+        ],
+        'line-dasharray': [
+          'match',
+          ['get', 'type'],
+          // 将所有线的类型都设置为虚线
+          ['azimuth-sunrise', 'azimuth-sunset', 'terminator-sunrise', 'terminator-sunset'],
+          ['literal', [2, 2]],
+          ['literal', []], // 默认回退（设为实线，尽管所有类型都已覆盖）
+        ],
+        'line-opacity': [
+          'match',
+          ['get', 'type'],
+          ['terminator-sunrise', 'terminator-sunset'],
+          0.75,
+          1,
+        ],
       },
     })
     map.addLayer({
@@ -142,11 +240,7 @@ function updateMapLayers(
         'text-offset': [0, 0.8],
         'text-line-height': 1.2,
       },
-      paint: {
-        'text-color': '#333333', // 灰色文字 (gray-500)
-        'text-halo-color': '#ffffff', // 白色描边
-        'text-halo-width': 1,
-      },
+      paint: { 'text-color': '#333333', 'text-halo-color': '#ffffff', 'text-halo-width': 1 },
     })
   }
 }
@@ -178,13 +272,20 @@ async function calculateAstroInfo(lat: number, lon: number) {
     const toi = createTimeOfInterest.fromCurrentTime()
     const location = createLocation(lat, lon)
     const sun = createSun(toi)
-    const sunriseToi = await sun.getRise(location)
-    const sunsetToi = await sun.getSet(location)
+    // 修正: 使用 getRiseUpperLimb / getSetUpperLimb 来匹配 h0 = -0.833 的标准
+    const sunriseToi = await sun.getRiseUpperLimb(location)
+    const sunsetToi = await sun.getSetUpperLimb(location)
     const solarNoonToi = await sun.getTransit(location)
     const sunAtSunrise = createSun(sunriseToi)
     const sunAtSunset = createSun(sunsetToi)
     const sunriseCoords = await sunAtSunrise.getApparentTopocentricHorizontalCoordinates(location)
     const sunsetCoords = await sunAtSunset.getApparentTopocentricHorizontalCoordinates(location)
+
+    // 计算等时线
+    const [sunriseLineCoords, sunsetLineCoords] = await Promise.all([
+      calculateTerminatorLine(sunriseToi, 'rise'),
+      calculateTerminatorLine(sunsetToi, 'set'),
+    ])
 
     astroInfo.value = {
       sunriseAzimuth: sunriseCoords.azimuth,
@@ -199,6 +300,7 @@ async function calculateAstroInfo(lat: number, lon: number) {
       { lng: lon, lat },
       { azimuth: astroInfo.value.sunriseAzimuth, time: astroInfo.value.sunriseTime },
       { azimuth: astroInfo.value.sunsetAzimuth, time: astroInfo.value.sunsetTime },
+      { sunrise: sunriseLineCoords, sunset: sunsetLineCoords },
     )
   }
   catch (e) {
