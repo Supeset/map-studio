@@ -66,6 +66,7 @@ function calculateDestinationPoint(
 async function calculateTerminatorLine(
   targetToi: TimeOfInterest,
   type: 'rise' | 'set',
+  forcePoint?: { lng: number, lat: number },
 ): Promise<[number, number][]> {
   const coords: [number, number][] = []
   // 为事件发生的精确时刻创建一个Sun实例，以获取该时刻的太阳坐标
@@ -113,6 +114,12 @@ async function calculateTerminatorLine(
     lon = (lon + 540) % 360 - 180
 
     coords.push([lon, lat])
+  }
+
+  // 简单暴力：将选定的点强制加入坐标数组，并按纬度重新排序，确保线条必定穿过该点
+  if (forcePoint) {
+    coords.push([forcePoint.lng, forcePoint.lat])
+    coords.sort((a, b) => a[1] - b[1])
   }
 
   return coords
@@ -281,10 +288,11 @@ async function calculateAstroInfo(lat: number, lon: number) {
     const sunriseCoords = await sunAtSunrise.getApparentTopocentricHorizontalCoordinates(location)
     const sunsetCoords = await sunAtSunset.getApparentTopocentricHorizontalCoordinates(location)
 
-    // 计算等时线
+    // 计算等时线 (传入当前坐标以确保线条经过该点)
+    const currentPoint = { lng: lon, lat }
     const [sunriseLineCoords, sunsetLineCoords] = await Promise.all([
-      calculateTerminatorLine(sunriseToi, 'rise'),
-      calculateTerminatorLine(sunsetToi, 'set'),
+      calculateTerminatorLine(sunriseToi, 'rise', currentPoint),
+      calculateTerminatorLine(sunsetToi, 'set', currentPoint),
     ])
 
     astroInfo.value = {
