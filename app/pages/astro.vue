@@ -358,16 +358,10 @@ onUnmounted(() => {
 
     <!-- 页面头部 -->
     <header
-      pos="absolute top-0 left-0 right-0"
-      p="4"
-      flex="~"
-      items-center
-      justify-between
-      z-10
+      class="p-4 flex items-center left-0 right-0 top-0 justify-between absolute z-10"
     >
       <div
-        text="xl white"
-        font-bold
+        class="text-xl text-white font-bold"
         style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"
       >
         天文工具

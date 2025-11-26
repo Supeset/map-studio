@@ -35,28 +35,20 @@ function selectStyle(style: typeof activeMapStyle.value) {
     >
       <div
         v-if="isOpen"
-        pos="absolute top-full right-0"
-
-        bg="white dark:gray-800"
-
-        mt-2 p-2 rounded-lg w-48 shadow-lg z-20
+        class="mt-2 p-2 rounded-lg bg-white w-48 shadow-lg right-0 top-full absolute z-20 dark:bg-gray-800"
       >
         <div
           v-for="style in mapStyles"
           :key="style.styleUrl"
-
-          flex="~ items-center"
-          p-2 rounded gap-2 cursor-pointer
-          hover:bg="gray-100 dark:gray-700"
+          class="p-2 rounded flex gap-2 cursor-pointer items-center hover:bg-gray-100 dark:hover:bg-gray-700"
           :class="{ 'text-teal-600': style.styleUrl === activeMapStyle.styleUrl }"
           @click="() => selectStyle(style)"
         >
           <div
-
-            rounded h-8 w-8 bg-cover bg-center
+            class="rounded h-8 w-8 bg-cover bg-center"
             :style="{ backgroundImage: `url('/styles/${style.styleName}.png')` }"
           />
-          <span text-sm>{{ style.label }}</span>
+          <span class="text-sm">{{ style.label }}</span>
         </div>
       </div>
     </Transition>

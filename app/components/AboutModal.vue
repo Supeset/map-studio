@@ -18,28 +18,21 @@ function closeModal() {
   <Teleport to="body">
     <div
       v-if="modelValue"
-      pos="fixed inset-0"
-      bg="black/50"
-      flex="~ items-center justify-center"
-      z-50
+      class="bg-black/50 flex items-center inset-0 justify-center fixed z-50"
       @click.self="closeModal"
     >
       <div
-        p-6
-        bg="white dark:gray-800"
-        rounded-lg
-        shadow-xl
-        w="!full max-w-sm"
+        class="mx-4 p-6 rounded-lg bg-white max-w-md w-full shadow-xl dark:bg-gray-800"
       >
-        <h2 text="2xl" font-bold mb-4>
+        <h2 class="text-2xl font-bold mb-4">
           关于 {{ appName }}
         </h2>
-        <p text="gray-600 dark:gray-300">
+        <p class="text-gray-600 dark:text-gray-300">
           这是一个基于 Nuxt 模板构建的地图查看网站，
           使用了 Mapbox GL JS 来实现交互式地图体验。
         </p>
-        <div mt-6 text-right>
-          <button btn @click="closeModal">
+        <div class="mt-6 text-right">
+          <button class="btn" @click="closeModal">
             关闭
           </button>
         </div>

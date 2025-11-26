@@ -132,6 +132,9 @@ importers:
       eslint-plugin-format:
         specifier: catalog:dev
         version: 1.0.2(eslint@9.39.1(jiti@2.6.1))
+      gcoord:
+        specifier: ^1.0.7
+        version: 1.0.7
       mapbox-gl:
         specifier: catalog:frontend
         version: 3.16.0
@@ -3555,6 +3558,10 @@ packages:
   fuse.js@7.1.0:
     resolution: {integrity: sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ==}
     engines: {node: '>=10'}
+
+  gcoord@1.0.7:
+    resolution: {integrity: sha512-UCN2iSm69jBOYz2ma2eg5I5imp65Cj70rcTTfMNSNMvZpR1U6oGjmVh080aCvC/6lN1ClkuOoBeaLuebw9AZJg==}
+    engines: {node: '>=16.11.0'}
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -9920,6 +9927,8 @@ snapshots:
   functions-have-names@1.2.3: {}
 
   fuse.js@7.1.0: {}
+
+  gcoord@1.0.7: {}
 
   generator-function@2.0.1: {}
 

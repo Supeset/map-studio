@@ -1,7 +1,6 @@
 import { createLocalFontProcessor } from '@unocss/preset-web-fonts/local'
 import {
   defineConfig,
-  presetAttributify,
   presetIcons,
   presetTypography,
   presetWebFonts,
@@ -17,7 +16,6 @@ export default defineConfig({
   ],
   presets: [
     presetWind4(),
-    presetAttributify(),
     presetIcons({
       scale: 1.2,
     }),
