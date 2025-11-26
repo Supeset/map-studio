@@ -200,7 +200,7 @@ function setSourceType(type: 'WGS84' | 'GCJ02' | 'BD09') {
     </header>
 
     <!-- Spotlight Search Box -->
-    <div class="px-4 pt-[15vh] flex pointer-events-none items-start inset-0 justify-center absolute z-20">
+    <div class="px-4 pt-[10vh] flex pointer-events-none items-start inset-0 justify-center absolute z-20">
       <div class="rounded-xl bg-white/90 max-w-2xl w-full pointer-events-auto shadow-2xl transition-all overflow-hidden backdrop-blur-md dark:bg-gray-800/90">
         <!-- Input Area -->
         <div class="p-4 border-b border-gray-200 flex items-center dark:border-gray-700">

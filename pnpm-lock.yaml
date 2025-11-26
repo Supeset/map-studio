@@ -56,6 +56,9 @@ catalogs:
     '@vueuse/core':
       specifier: ^14.0.0
       version: 14.0.0
+    gcoord:
+      specifier: ^1.0.7
+      version: 1.0.7
     mapbox-gl:
       specifier: ^3.16.0
       version: 3.16.0
@@ -133,7 +136,7 @@ importers:
         specifier: catalog:dev
         version: 1.0.2(eslint@9.39.1(jiti@2.6.1))
       gcoord:
-        specifier: ^1.0.7
+        specifier: catalog:frontend
         version: 1.0.7
       mapbox-gl:
         specifier: catalog:frontend
