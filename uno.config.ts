@@ -43,5 +43,7 @@ export default defineConfig({
     'i-carbon-light',
     'i-carbon-bicycle',
     'i-carbon-sunrise',
+    'i-carbon-location',
+    'i-carbon-copy',
   ],
 })

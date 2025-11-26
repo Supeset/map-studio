@@ -11,6 +11,11 @@ export const internalTools: ToolLink[] = [
     to: '/astro',
     icon: 'i-carbon-sunrise',
   },
+  {
+    name: '坐标转换',
+    to: '/coords',
+    icon: 'i-carbon-location',
+  },
 ]
 
 export const externalLinks: ToolLink[] = [
