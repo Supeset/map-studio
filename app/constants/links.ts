@@ -16,6 +16,11 @@ export const internalTools: ToolLink[] = [
     to: '/coords',
     icon: 'i-carbon-location',
   },
+  {
+    name: '火箭发射点',
+    to: '/rocket',
+    icon: 'i-carbon-rocket',
+  },
 ]
 
 export const externalLinks: ToolLink[] = [
