@@ -22,45 +22,46 @@ onClickOutside(fabRef, () => {
     >
       <div
         v-if="isOpen"
-        class="mb-3 p-2 rounded-lg bg-white/80 w-60 shadow-lg backdrop-blur-sm dark:bg-gray-800/80"
+        class="mb-3 p-2 rounded-lg bg-white/90 w-80 shadow-xl backdrop-blur-md dark:bg-gray-800/90"
       >
         <!-- 内部工具 -->
         <template v-if="internalTools.length > 0">
-          <h3 class="text-sm text-gray-500 font-semibold px-2 py-1">
+          <h3 class="text-xs text-gray-400 tracking-wider font-bold mb-1 px-2 py-1 uppercase">
             内部工具
           </h3>
-          <ul>
-            <li v-for="link in internalTools" :key="link.to">
-              <NuxtLink
-                :to="link.to"
-                class="p-2 rounded-md flex gap-3 items-center hover:bg-gray-200 dark:hover:bg-gray-700"
-                @click="isOpen = false"
-              >
-                <div :class="link.icon" class="text-xl" />
-                <span class="text-sm">{{ link.name }}</span>
-              </NuxtLink>
-            </li>
-          </ul>
+          <div class="mb-2 px-1 gap-2 grid grid-cols-3">
+            <NuxtLink
+              v-for="link in internalTools"
+              :key="link.to"
+              :to="link.to"
+              class="text-teal-700 px-1 py-3 rounded-xl bg-teal-50 flex flex-col transition-all items-center justify-center dark:text-teal-300 dark:bg-teal-900/20 hover:bg-teal-100 active:scale-95 hover:scale-105 dark:hover:bg-teal-900/40"
+              @click="isOpen = false"
+            >
+              <div :class="link.icon" class="text-2xl mb-1.5" />
+              <span class="text-xs font-bold">{{ link.name }}</span>
+            </NuxtLink>
+          </div>
         </template>
 
         <!-- 外部链接 -->
         <template v-if="externalLinks.length > 0">
-          <h3 class="text-sm text-gray-500 font-semibold mt-2 px-2 py-1">
+          <div class="my-1 pt-1 border-t border-gray-100 dark:border-gray-700" />
+          <h3 class="text-xs text-gray-400 tracking-wider font-bold mb-1 px-2 py-1 uppercase">
             外部链接
           </h3>
-          <ul>
-            <li v-for="link in externalLinks" :key="link.url">
-              <a
-                :href="link.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="p-2 rounded-md flex gap-3 items-center hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <div :class="link.icon" class="text-xl" />
-                <span class="text-sm">{{ link.name }}</span>
-              </a>
-            </li>
-          </ul>
+          <div class="gap-1 grid grid-cols-3">
+            <a
+              v-for="link in externalLinks"
+              :key="link.url"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group p-2 text-center rounded-lg flex flex-col transition-colors items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700/50"
+            >
+              <div :class="link.icon" class="text-xl text-gray-500 mb-1 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
+              <span class="text-xs text-gray-600 leading-tight dark:text-gray-400">{{ link.name }}</span>
+            </a>
+          </div>
         </template>
       </div>
     </Transition>
