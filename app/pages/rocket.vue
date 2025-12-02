@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FeatureCollection } from 'geojson'
-import type { GeoJSONSource, MapMouseEvent } from 'mapbox-gl'
+import type { GeoJSONSource } from 'mapbox-gl'
 import mapboxgl from 'mapbox-gl'
 
 defineOptions({

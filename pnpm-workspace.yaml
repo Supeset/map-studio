@@ -3,18 +3,18 @@ packages: []
 catalogs:
   build:
     '@nuxt/devtools': ^3.1.1
-    '@nuxt/eslint': ^1.10.0
+    '@nuxt/eslint': ^1.11.0
     '@nuxt/kit': ^4.2.1
     '@nuxtjs/color-mode': ^4.0.0
     '@pinia/nuxt': ^0.11.3
     '@unocss/eslint-config': ^66.5.9
     '@unocss/nuxt': ^66.5.9
-    '@vite-pwa/nuxt': ^1.0.7
-    '@vueuse/nuxt': ^14.0.0
+    '@vite-pwa/nuxt': ^1.1.0
+    '@vueuse/nuxt': ^14.1.0
     nuxt: ^4.2.1
     unocss: ^66.5.9
     unplugin: ^2.3.11
-    vite: ^7.2.4
+    vite: ^7.2.6
   dev:
     '@antfu/eslint-config': ^6.2.0
     astronomy-bundle: ^7.7.7
@@ -24,7 +24,7 @@ catalogs:
     typescript: ^5.9.3
     vue-tsc: ^3.1.5
   frontend:
-    '@vueuse/core': ^14.0.0
+    '@vueuse/core': ^14.1.0
     gcoord: ^1.0.7
     mapbox-gl: ^3.16.0
     pinia: ^3.0.4

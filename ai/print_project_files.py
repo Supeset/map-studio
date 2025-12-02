@@ -1,123 +1,192 @@
-# print_project_files.py
 import os
 import re
 import argparse
+import fnmatch
 
-def get_project_structure(root_dir, file_regex, exclude_dirs=None, output_file=None):
+def load_ignore_patterns(base_dir, extra_excludes=None):
     """
-    遍历项目目录，匹配文件，并将文件路径和内容整合输出。
+    加载忽略规则：合并 .gitignore 和手动排除项。
+    """
+    patterns = set(extra_excludes) if extra_excludes else set()
+    
+    # 尝试读取当前运行目录下的 .gitignore
+    gitignore_path = os.path.join(base_dir, '.gitignore')
+    if os.path.exists(gitignore_path):
+        try:
+            with open(gitignore_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        patterns.add(line)
+        except Exception as e:
+            print(f"⚠️ Warning: 读取 .gitignore 失败: {e}")
+            
+    return list(patterns)
 
-    :param root_dir: 项目的根目录路径。
-    :param file_regex: 用于匹配文件名的正则表达式。
-    :param exclude_dirs: 需要排除的目录列表。
-    :param output_file: (可选) 输出结果的文件路径。
+def is_ignored(path, base_dir, ignore_patterns):
     """
-    if exclude_dirs is None:
-        exclude_dirs = []
-    
-    # 转换为集合以提高查找效率
-    exclude_set = set(exclude_dirs)
-    
-    # 编译正则表达式以提高效率
+    检查路径是否被忽略。
+    path: 文件的绝对路径
+    base_dir: 相对路径的基准目录
+    """
+    name = os.path.basename(path)
+    # 获取相对路径，并统一转为 Unix 风格 (/)
+    rel_path = os.path.relpath(path, base_dir)
+    if os.sep == '\\':
+        rel_path = rel_path.replace('\\', '/')
+
+    for pattern in ignore_patterns:
+        # 1. 简单匹配文件名 (如 *.pyc, node_modules)
+        if fnmatch.fnmatch(name, pattern):
+            return True
+        # 2. 匹配相对路径 (如 src/temp/*)
+        if fnmatch.fnmatch(rel_path, pattern):
+            return True
+        # 3. 处理目录匹配 (如 dist/)
+        if pattern.endswith('/') and rel_path.startswith(pattern):
+            return True
+            
+    return False
+
+def is_binary_file(filepath, blocksize=1024):
+    """
+    通过读取前1024个字节判断是否为二进制文件。
+    """
     try:
-        compiled_regex = re.compile(file_regex)
-    except re.error as e:
-        print(f"Error: 正则表达式 '{file_regex}' 无效: {e}")
-        return
+        with open(filepath, 'rb') as f:
+            chunk = f.read(blocksize)
+            if b'\0' in chunk:  # 包含空字节通常是二进制文件
+                return True
+    except Exception:
+        return True # 读取失败视为不需要处理的文件
+    return False
 
-    # 准备输出
-    output_lines = []
+def collect_files(inputs, file_regex, ignore_patterns, base_dir):
+    """
+    生成器：遍历输入列表，yield 符合条件的文件路径。
+    """
+    compiled_regex = re.compile(file_regex)
 
-    for root, dirs, files in os.walk(root_dir, topdown=True):
-        # --- 原地修改dirs列表，阻止os.walk进入排除的目录 ---
-        
-        # 原始的 dirs[:] = [d for d in dirs if d not in exclude_set] 只能排除顶级目录
-        # 我们需要更强大的排除逻辑
-        
-        # 过滤掉需要排除的目录
-        dirs_to_remove = set()
-        for d in dirs:
-            # 检查绝对/相对路径是否以排除项开头
-            dir_path = os.path.join(root, d)
-            relative_dir_path = os.path.relpath(dir_path, root_dir).replace(os.sep, '/') # 标准化为 / 分隔符
-            
-            if d in exclude_set or relative_dir_path in exclude_set:
-                dirs_to_remove.add(d)
-        
-        dirs[:] = [d for d in dirs if d not in dirs_to_remove]
+    for input_path in inputs:
+        # 确保处理的是绝对路径
+        abs_input_path = os.path.abspath(input_path)
 
-        # 过滤掉需要排除的文件
-        files_to_process = []
-        for filename in files:
-            file_path = os.path.join(root, filename)
-            relative_file_path = os.path.relpath(file_path, root_dir).replace(os.sep, '/')
-            
-            if filename not in exclude_set and relative_file_path not in exclude_set:
-                files_to_process.append(filename)
+        # 情况 A: 输入是文件
+        if os.path.isfile(abs_input_path):
+            if is_ignored(abs_input_path, base_dir, ignore_patterns):
+                continue
+            if compiled_regex.search(os.path.basename(abs_input_path)):
+                 yield abs_input_path
 
-        for filename in files_to_process: # 只遍历过滤后的文件
-            if compiled_regex.search(filename):
-                file_path = os.path.join(root, filename)
-                relative_path = os.path.relpath(file_path, root_dir)
-
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
+        # 情况 B: 输入是目录
+        elif os.path.isdir(abs_input_path):
+            for root, dirs, files in os.walk(abs_input_path, topdown=True):
+                # 过滤目录
+                dirs[:] = [d for d in dirs if not is_ignored(os.path.join(root, d), base_dir, ignore_patterns)]
+                
+                for filename in files:
+                    file_path = os.path.join(root, filename)
                     
-                    # 格式化输出
-                    output_lines.append(f"--- File: {relative_path.replace(os.sep, '/')} ---")
-                    output_lines.append(content)
-                    output_lines.append("\n" * 2) # 添加一些空行以便分隔
+                    if is_ignored(file_path, base_dir, ignore_patterns):
+                        continue
+                    
+                    if compiled_regex.search(filename):
+                        yield file_path
+        else:
+            print(f"⚠️ Warning: 路径不存在，跳过: {input_path}")
 
-                except Exception as e:
-                    output_lines.append(f"--- File: {relative_path.replace(os.sep, '/')} ---")
-                    output_lines.append(f"!!! Error reading file: {e} !!!")
-                    output_lines.append("\n" * 2)
-
-    final_output = "\n".join(output_lines)
-
+def process_and_write(inputs, file_regex, output_file, exclude_list):
+    """
+    主处理逻辑
+    """
+    # 以当前工作目录为基准读取 .gitignore
+    base_dir = os.getcwd()
+    ignore_patterns = load_ignore_patterns(base_dir, exclude_list)
+    
+    # 准备输出流（如果是 stdout 则为 None）
+    out_handle = None
     if output_file:
         try:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(final_output)
-            print(f"项目代码已成功整合到文件: {output_file}")
+            out_handle = open(output_file, 'w', encoding='utf-8')
         except Exception as e:
-            print(f"Error: 无法写入到文件 {output_file}: {e}")
+            print(f"❌ Error: 无法创建输出文件: {e}")
+            return
+
+    def write_content(text):
+        if out_handle:
+            out_handle.write(text + "\n")
+        else:
+            print(text)
+
+    count = 0
+    print(f"🔎 正在扫描，基准目录: {base_dir}")
+    print(f"   匹配规则: {file_regex}")
+    
+    # 使用生成器遍历文件
+    for file_path in collect_files(inputs, file_regex, ignore_patterns, base_dir):
+        rel_path = os.path.relpath(file_path, base_dir).replace('\\', '/')
+        
+        # 二进制检查
+        if is_binary_file(file_path):
+            print(f"   [跳过二进制] {rel_path}")
+            continue
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            write_content(f"--- File: {rel_path} ---")
+            write_content(content)
+            write_content("\n" * 2)
+            count += 1
+            # 在控制台显示进度（如果输出到文件的话）
+            if output_file:
+                print(f"   [已添加] {rel_path}")
+
+        except Exception as e:
+            print(f"❌ Error 读取文件 {rel_path}: {e}")
+
+    if out_handle:
+        out_handle.close()
+        print(f"\n✅ 完成! 共处理 {count} 个文件。内容已保存至: {output_file}")
     else:
-        # 如果不指定输出文件，则直接打印到控制台
-        print(final_output)
+        # 如果是打印到控制台，最后输出一个统计
+        pass
 
 def main():
     parser = argparse.ArgumentParser(
-        description="根据正则表达式抓取项目文件内容，并整合输出。",
+        description="CLI工具：合并多个文件或文件夹的内容。支持 .gitignore 排除。",
         formatter_class=argparse.RawTextHelpFormatter
     )
+    # 核心变化：nargs='+' 允许接受一个或多个参数列表
     parser.add_argument(
-        "root_dir",
-        help="要扫描的项目根目录路径。"
+        "paths",
+        nargs='+',
+        help="输入路径列表 (可以是文件或文件夹，用空格分隔)。"
     )
     parser.add_argument(
-        "file_regex",
-        help="用于匹配文件名的正则表达式。示例: '\\.(vue|ts|js)$'"
+        "-r", "--regex",
+        dest="file_regex",
+        default=".*", # 默认匹配所有
+        help="文件名匹配正则 (默认: '.*')。\n例如: '\\.(py|js)$' 只匹配 python 和 js 文件"
     )
     parser.add_argument(
         "-o", "--output",
         dest="output_file",
-        help="将结果保存到的输出文件名。 (例如: project_context.txt)"
+        help="输出文件路径。如果不填，则直接打印到控制台。"
     )
     parser.add_argument(
         "-e", "--exclude",
         dest="exclude_dirs",
-        default="node_modules,.git,dist,build,public/assets,pnpm-lock.yaml",
-        help="需要排除的目录或文件名, 用逗号分隔。\n默认值: 'node_modules,.git,dist,build,public/assets,pnpm-lock.yaml'"
+        default=".git,node_modules,__pycache__,dist,build,.idea,.vscode",
+        help="额外的排除项 (逗号分隔)。\n默认已排除: .git, node_modules, dist 等"
     )
 
     args = parser.parse_args()
     
-    # 将逗号分隔的字符串转换为列表
-    exclude_list = [item.strip() for item in args.exclude_dirs.split(',')]
-    
-    get_project_structure(args.root_dir, args.file_regex, exclude_list, args.output_file)
+    exclude_list = [item.strip() for item in args.exclude_dirs.split(',') if item.strip()]
+
+    process_and_write(args.paths, args.file_regex, args.output_file, exclude_list)
 
 if __name__ == "__main__":
     main()
