@@ -15,19 +15,6 @@ const isAboutModalOpen = ref(false)
     >
       {{ appName }}
     </div>
-
-    <!-- 右侧：功能按钮组 -->
-    <div
-      class="px-3 py-2 rounded-full bg-white/80 flex gap-3 shadow-lg items-center backdrop-blur-sm dark:bg-gray-800/80"
-    >
-      <button class="icon-btn" title="关于" @click="isAboutModalOpen = true">
-        <div class="i-carbon-information" />
-      </button>
-
-      <DarkToggle />
-
-      <MapStyleSwitcher />
-    </div>
   </header>
 
   <AboutModal v-model="isAboutModalOpen" />
