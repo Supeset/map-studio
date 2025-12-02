@@ -10,6 +10,5 @@ defineOptions({
       <Map />
     </ClientOnly>
     <TheHeader />
-    <TheToolbox />
   </div>
 </template>

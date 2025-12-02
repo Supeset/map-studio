@@ -329,11 +329,19 @@ async function handleMapClick(event: MapMouseEvent) {
   await calculateAstroInfo(lat, lng)
 }
 
+function handleStyleLoad() {
+  // 样式切换后，如果有选中的点，重新绘制天文信息
+  if (selectedPoint.value) {
+    calculateAstroInfo(selectedPoint.value.lat, selectedPoint.value.lng)
+  }
+}
+
 // --- Lifecycle Hooks ---
 function cleanupMap() {
   const map = mapStore.mapInstance
   if (map) {
     map.off('click', handleMapClick)
+    map.off('style.load', handleStyleLoad)
     removeMapLayers()
   }
 }
@@ -342,6 +350,7 @@ watch(() => mapStore.isMapLoaded, (isLoaded) => {
   if (isLoaded && mapStore.mapInstance) {
     const map = mapStore.mapInstance as Map
     map.on('click', handleMapClick)
+    map.on('style.load', handleStyleLoad)
   }
 }, { immediate: true })
 

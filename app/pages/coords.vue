@@ -162,13 +162,23 @@ watch([inputStr, inputSourceType], () => {
   updateCoords()
 })
 
+function handleStyleLoad() {
+  // 样式切换后，如果有结果，重新绘制坐标点
+  if (result.value)
+    updateCoords()
+}
+
 // 监听地图加载状态（针对直接刷新页面的情况）
 watch(() => isMapLoaded.value, (loaded) => {
-  if (loaded && parsedInput.value)
-    updateCoords()
+  if (loaded) {
+    mapInstance.value?.on('style.load', handleStyleLoad)
+    if (parsedInput.value)
+      updateCoords()
+  }
 })
 
 onUnmounted(() => {
+  mapInstance.value?.off('style.load', handleStyleLoad)
   removeMapLayers()
 })
 

@@ -234,6 +234,9 @@ function setupEvents() {
   map.on('mouseleave', UNCLUSTERED_POINT_ID, () => {
     map.getCanvas().style.cursor = ''
   })
+
+  // 当底图样式切换后，重新初始化图层
+  map.on('style.load', initLayers)
 }
 
 function removeLayers() {
@@ -252,9 +255,7 @@ function removeLayers() {
   if (map.getSource(SOURCE_ID))
     map.removeSource(SOURCE_ID)
 
-  // 清除事件监听 (Mapbox GL JS 在 removeLayer 时不会自动清除全局 map 上的事件，
-  // 但由于我们依赖组件销毁，通常 Mapbox 实例本身会被重用或销毁。
-  // 严谨起见，这里简化处理，因为 layer 不存在了，事件触发也没影响)
+  map.off('style.load', initLayers)
 }
 
 // 监听地图加载完成
@@ -286,29 +287,6 @@ onUnmounted(() => {
         返回主页
       </NuxtLink>
     </header>
-
-    <!-- Legend/Info -->
-    <div class="text-xs p-3 rounded-lg bg-white/90 pointer-events-none shadow-lg bottom-8 left-4 absolute z-10 backdrop-blur space-y-2 dark:bg-gray-800/90">
-      <div class="font-bold mb-1">
-        图例
-      </div>
-      <div class="flex gap-2 items-center">
-        <span class="rounded-full bg-teal-600 h-3 w-3 ring-2 ring-white" />
-        <span>单个发射点</span>
-      </div>
-      <div class="flex gap-2 items-center">
-        <span class="rounded-full bg-[#51bbd6] opacity-80 h-4 w-4" />
-        <span>&lt; 10 个聚合</span>
-      </div>
-      <div class="flex gap-2 items-center">
-        <span class="rounded-full bg-[#f1f075] opacity-80 h-4 w-4" />
-        <span>10 - 30 个聚合</span>
-      </div>
-      <div class="flex gap-2 items-center">
-        <span class="rounded-full bg-[#f28cb1] opacity-80 h-4 w-4" />
-        <span>&gt; 30 个聚合</span>
-      </div>
-    </div>
   </div>
 </template>
 
