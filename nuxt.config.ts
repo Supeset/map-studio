@@ -29,6 +29,7 @@ export default defineNuxtConfig({
 
   css: [
     'mapbox-gl/dist/mapbox-gl.css',
+    '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css',
   ],
 
   colorMode: {

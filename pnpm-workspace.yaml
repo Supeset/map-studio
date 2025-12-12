@@ -3,34 +3,34 @@ packages: []
 catalogs:
   build:
     '@nuxt/devtools': ^3.1.1
-    '@nuxt/eslint': ^1.11.0
-    '@nuxt/kit': ^4.2.1
+    '@nuxt/eslint': ^1.12.1
+    '@nuxt/kit': ^4.2.2
     '@nuxtjs/color-mode': ^4.0.0
     '@pinia/nuxt': ^0.11.3
-    '@unocss/eslint-config': ^66.5.9
-    '@unocss/nuxt': ^66.5.9
+    '@unocss/eslint-config': ^66.5.10
+    '@unocss/nuxt': ^66.5.10
     '@vite-pwa/nuxt': ^1.1.0
     '@vueuse/nuxt': ^14.1.0
-    nuxt: ^4.2.1
-    unocss: ^66.5.9
+    nuxt: ^4.2.2
+    unocss: ^66.5.10
     unplugin: ^2.3.11
-    vite: ^7.2.6
+    vite: ^7.2.7
   dev:
-    '@antfu/eslint-config': ^6.2.0
+    '@antfu/eslint-config': ^6.6.1
     astronomy-bundle: ^7.7.7
     dayjs: ^1.11.19
     eslint: ^9.39.1
-    eslint-plugin-format: ^1.0.2
+    eslint-plugin-format: ^1.1.0
     typescript: ^5.9.3
-    vue-tsc: ^3.1.5
+    vue-tsc: ^3.1.8
   frontend:
     '@vueuse/core': ^14.1.0
     gcoord: ^1.0.7
-    mapbox-gl: ^3.16.0
+    mapbox-gl: ^3.17.0
     pinia: ^3.0.4
     vue: ^3.5.25
   icons:
-    '@iconify-json/carbon': ^1.2.14
+    '@iconify-json/carbon': ^1.2.15
     '@iconify-json/twemoji': ^1.2.4
 
 onlyBuiltDependencies:

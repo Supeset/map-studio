@@ -21,6 +21,11 @@ export const internalTools: ToolLink[] = [
     to: '/rocket',
     icon: 'i-carbon-rocket',
   },
+  {
+    name: '绘图工坊',
+    to: '/draw',
+    icon: 'i-carbon-draw',
+  },
 ]
 
 export const externalLinks: ToolLink[] = [

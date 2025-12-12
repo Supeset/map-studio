@@ -46,5 +46,6 @@ export default defineConfig({
     'i-carbon-location',
     'i-carbon-copy',
     'i-carbon-rocket',
+    'i-carbon-draw',
   ],
 })
