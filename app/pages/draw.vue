@@ -23,7 +23,7 @@ const drawStyles = [
     filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
     paint: {
       'fill-color': ['coalesce', ['get', 'user_fill'], '#3bb2d0'],
-      'fill-opacity': ['coalesce', ['get', 'user_fill-opacity'], 0.1],
+      'fill-opacity': ['coalesce', ['get', 'user_fill-opacity'], 0.4],
       'fill-outline-color': ['coalesce', ['get', 'user_stroke'], '#3bb2d0'],
     },
   },
@@ -34,7 +34,7 @@ const drawStyles = [
     filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     paint: {
       'fill-color': ['coalesce', ['get', 'user_fill'], '#fbb03b'],
-      'fill-opacity': ['coalesce', ['get', 'user_fill-opacity'], 0.1],
+      'fill-opacity': ['coalesce', ['get', 'user_fill-opacity'], 0.4],
       'fill-outline-color': ['coalesce', ['get', 'user_stroke'], '#fbb03b'],
     },
   },
@@ -132,7 +132,7 @@ function initDraw() {
     displayControlsDefault: false, // 隐藏默认控件，使用自定义UI
     userProperties: true, // 关键：启用 properties 映射到样式
     styles: drawStyles as any,
-    modes: MapboxDraw.modes, // 使用默认模式
+    modes: MapboxDraw.modes as any, // 使用默认模式
   })
 
   mapInstance.value.addControl(draw as unknown as IControl, 'top-left')
@@ -180,7 +180,9 @@ function handleSelectionChange(e: any) {
 function setDrawMode(mode: 'draw_point' | 'draw_line_string' | 'draw_polygon' | 'simple_select') {
   if (!drawInstance.value)
     return
-  drawInstance.value.changeMode(mode)
+  // 使用 as any 规避类型定义重载不匹配的问题，并手动更新 currentMode 以保证 UI 响应
+  drawInstance.value.changeMode(mode as any)
+  currentMode.value = mode
 }
 
 // 删除当前选中
@@ -265,7 +267,12 @@ function addDefaultStyles() {
 watch(() => isMapLoaded.value, (loaded) => {
   if (loaded)
     initDraw()
-}, { immediate: true })
+})
+
+onMounted(() => {
+  if (isMapLoaded.value)
+    initDraw()
+})
 
 onUnmounted(() => {
   if (mapInstance.value && drawInstance.value) {
@@ -285,10 +292,28 @@ const selectedTypeLabel = computed(() => {
   const feat = drawInstance.value.get(selectedFeatureId.value)
   return feat?.geometry.type || 'Unknown'
 })
+
+// --- GeoJSON Panel State ---
+const isGeoJsonPanelOpen = ref(false)
+const { copy: copyToClipboard, copied: isCopied } = useClipboard()
+
+const displayGeoJson = computed(() => {
+  // 如果选中了要素，只显示该要素的 JSON
+  if (selectedFeatureId.value && drawInstance.value) {
+    const feat = drawInstance.value.get(selectedFeatureId.value)
+    return JSON.stringify(feat, null, 2)
+  }
+  // 否则显示全部数据的 FeatureCollection
+  return JSON.stringify(savedFeatures.value, null, 2)
+})
+
+function handleCopyGeoJson() {
+  copyToClipboard(displayGeoJson.value)
+}
 </script>
 
 <template>
-  <div class="h-full w-full relative">
+  <div class="h-full w-full relative overflow-hidden">
     <ClientOnly>
       <Map />
     </ClientOnly>
@@ -305,7 +330,24 @@ const selectedTypeLabel = computed(() => {
         返回主页
       </NuxtLink>
     </header>
-
+    <!-- Drawing Hint (Top Center) -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform -translate-y-4 opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform -translate-y-4 opacity-0"
+    >
+      <div
+        v-if="currentMode !== 'simple_select'"
+        class="flex pointer-events-none left-0 right-0 top-24 justify-center absolute z-40"
+      >
+        <div class="text-sm text-white/90 tracking-wide font-medium px-6 py-2 border border-white/10 rounded-full bg-black/60 shadow-lg backdrop-blur-md">
+          双击地图结束绘制
+        </div>
+      </div>
+    </Transition>
     <!-- Toolbar -->
     <div class="flex flex-col gap-2 items-start left-4 top-20 absolute z-20">
       <div class="p-2 rounded-lg bg-white/90 flex flex-col gap-2 shadow-xl backdrop-blur-sm dark:bg-gray-800/90">
@@ -343,125 +385,158 @@ const selectedTypeLabel = computed(() => {
           <div class="i-gis-polygon-pt text-xl" />
         </button>
       </div>
-
-      <!-- Helper Text -->
-      <span class="text-xs text-white/90 p-2 rounded bg-black/40 backdrop-blur-sm">
-        双击<br>结束<br>绘制
-      </span>
     </div>
 
-    <!-- Properties Panel -->
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="transform translate-x-full opacity-0"
-      enter-to-class="transform translate-x-0 opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="transform translate-x-0 opacity-100"
-      leave-to-class="transform translate-x-full opacity-0"
-    >
-      <div
-        v-if="selectedFeatureId"
-        class="border border-gray-100 rounded-xl bg-white/95 flex flex-col h-60vh w-80 shadow-2xl right-4 top-20 absolute z-30 overflow-hidden backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+    <!-- Right Side Panels Container -->
+    <div class="flex flex-col gap-3 h-65vh w-80 pointer-events-none right-4 top-20 absolute z-30">
+      <!-- 1. Properties Panel -->
+      <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform translate-x-full opacity-0"
+        enter-to-class="transform translate-x-0 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="transform translate-x-0 opacity-100"
+        leave-to-class="transform translate-x-full opacity-0"
       >
-        <!-- Panel Header -->
-        <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between dark:border-gray-700 dark:bg-gray-900/50">
-          <div>
-            <h3 class="text-gray-800 font-bold dark:text-gray-100">
-              属性编辑
-            </h3>
-            <div class="text-xs text-gray-500 tracking-wider font-mono mt-0.5 uppercase">
-              {{ selectedTypeLabel }}
+        <div
+          v-if="selectedFeatureId"
+          class="border border-gray-100 rounded-xl bg-white/95 flex shrink-0 flex-col max-h-40vh pointer-events-auto shadow-xl overflow-hidden backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+        >
+          <!-- Panel Header -->
+          <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between dark:border-gray-700 dark:bg-gray-900/50">
+            <div>
+              <h3 class="text-gray-800 font-bold dark:text-gray-100">
+                属性编辑
+              </h3>
+              <div class="text-xs text-gray-500 tracking-wider font-mono mt-0.5 uppercase">
+                {{ selectedTypeLabel }}
+              </div>
             </div>
-          </div>
-          <button
-            class="text-red-500 p-1.5 rounded-md transition hover:bg-red-50 dark:hover:bg-red-900/20"
-            title="删除要素"
-            @click="deleteSelected"
-          >
-            <div class="i-carbon-trash-can text-lg" />
-          </button>
-        </div>
-
-        <!-- Panel Body -->
-        <div class="p-4 flex-1 overflow-y-auto">
-          <!-- Quick Actions -->
-          <div class="mb-6">
             <button
-              class="text-sm text-teal-700 font-medium px-4 py-2 rounded-lg bg-teal-50 flex gap-2 w-full transition items-center justify-center dark:text-teal-300 dark:bg-teal-900/20 hover:bg-teal-100 dark:hover:bg-teal-900/30"
-              @click="addDefaultStyles"
+              class="text-red-500 p-1.5 rounded-md transition hover:bg-red-50 dark:hover:bg-red-900/20"
+              title="删除要素"
+              @click="deleteSelected"
             >
-              <div class="i-carbon-magic-wand" />
-              应用默认样式
+              <div class="i-carbon-trash-can text-lg" />
             </button>
           </div>
 
-          <!-- Properties Table -->
-          <div class="space-y-3">
-            <div v-if="Object.keys(selectedFeatureProps).length === 0" class="text-sm text-gray-400 py-4 text-center">
-              暂无属性
+          <!-- Panel Body -->
+          <div class="p-4 flex-1 overflow-y-auto">
+            <!-- Quick Actions -->
+            <div class="mb-6">
+              <button
+                class="text-sm text-teal-700 font-medium px-4 py-2 rounded-lg bg-teal-50 flex gap-2 w-full transition items-center justify-center dark:text-teal-300 dark:bg-teal-900/20 hover:bg-teal-100 dark:hover:bg-teal-900/30"
+                @click="addDefaultStyles"
+              >
+                <div class="i-carbon-magic-wand" />
+                应用默认样式
+              </button>
             </div>
 
-            <div
-              v-for="(value, key) in selectedFeatureProps"
-              :key="key"
-              class="group p-2 border border-transparent rounded-lg bg-gray-50 transition relative hover:border-gray-200 dark:bg-gray-700/30 dark:hover:border-gray-600"
-            >
-              <div class="mb-1 flex items-start justify-between">
-                <span class="text-xs text-gray-500 font-mono w-32 truncate dark:text-gray-400" :title="key">{{ key }}</span>
-                <button
-                  class="text-gray-400 p-0.5 opacity-0 transition hover:text-red-500 group-hover:opacity-100"
-                  @click="removeProperty(String(key))"
-                >
-                  <div class="i-carbon-close text-sm" />
-                </button>
+            <!-- Properties Table -->
+            <div class="space-y-3">
+              <div v-if="Object.keys(selectedFeatureProps).length === 0" class="text-sm text-gray-400 py-4 text-center">
+                暂无属性
               </div>
-              <div class="flex gap-2 items-center">
-                <input
-                  v-if="key.toString().includes('color')"
-                  type="color"
-                  :value="value"
-                  class="rounded border-none bg-transparent h-6 w-6 cursor-pointer"
-                  @input="(e) => updateFeatureProperty(String(key), (e.target as HTMLInputElement).value)"
-                >
-                <input
-                  :value="value"
-                  class="text-sm text-gray-800 font-medium outline-none border-none bg-transparent flex-1 w-full dark:text-gray-200"
-                  @change="(e) => updateFeatureProperty(String(key), (e.target as HTMLInputElement).value)"
-                >
+
+              <div
+                v-for="(value, key) in selectedFeatureProps"
+                :key="key"
+                class="group p-2 border border-transparent rounded-lg bg-gray-50 transition relative hover:border-gray-200 dark:bg-gray-700/30 dark:hover:border-gray-600"
+              >
+                <div class="mb-1 flex items-start justify-between">
+                  <span class="text-xs text-gray-500 font-mono w-32 truncate dark:text-gray-400" :title="key">{{ key }}</span>
+                  <button
+                    class="text-gray-400 p-0.5 opacity-0 transition hover:text-red-500 group-hover:opacity-100"
+                    @click="removeProperty(String(key))"
+                  >
+                    <div class="i-carbon-close text-sm" />
+                  </button>
+                </div>
+                <div class="flex gap-2 items-center">
+                  <input
+                    v-if="key.toString().includes('color') || ['stroke', 'fill'].includes(key.toString())"
+                    type="color"
+                    :value="value"
+                    class="rounded border-none bg-transparent h-6 w-6 cursor-pointer"
+                    @input="(e) => updateFeatureProperty(String(key), (e.target as HTMLInputElement).value)"
+                  >
+                  <input
+                    :value="value"
+                    class="text-sm text-gray-800 font-medium outline-none border-none bg-transparent flex-1 w-full dark:text-gray-200"
+                    @change="(e) => updateFeatureProperty(String(key), (e.target as HTMLInputElement).value)"
+                  >
+                </div>
               </div>
             </div>
+          </div>
+
+          <!-- Add Property Footer -->
+          <div class="p-3 border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
+            <div class="text-xs text-gray-400 tracking-wider font-bold mb-2 uppercase">
+              新增属性
+            </div>
+            <div class="mb-2 flex gap-2">
+              <input
+                v-model="newPropKey"
+                placeholder="Key (e.g. stroke)"
+                class="text-sm px-2 py-1.5 outline-none border border-gray-300 rounded bg-white flex-1 min-w-0 dark:border-gray-600 focus:border-teal-500 dark:bg-gray-800"
+                @keyup.enter="addProperty"
+              >
+              <input
+                v-model="newPropValue"
+                placeholder="Value"
+                class="text-sm px-2 py-1.5 outline-none border border-gray-300 rounded bg-white flex-1 min-w-0 dark:border-gray-600 focus:border-teal-500 dark:bg-gray-800"
+                @keyup.enter="addProperty"
+              >
+            </div>
+            <button
+              class="text-sm text-gray-700 py-1.5 rounded bg-gray-200 w-full transition dark:text-gray-300 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+              :disabled="!newPropKey"
+              @click="addProperty"
+            >
+              添加
+            </button>
           </div>
         </div>
+      </Transition>
 
-        <!-- Add Property Footer -->
-        <div class="p-3 border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/50">
-          <div class="text-xs text-gray-400 tracking-wider font-bold mb-2 uppercase">
-            新增属性
+      <!-- 2. GeoJSON Viewer Panel -->
+      <div
+        class="border border-gray-100 rounded-xl bg-white/95 flex flex-col min-h-0 pointer-events-auto shadow-xl transition-all duration-300 overflow-hidden backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+        :class="isGeoJsonPanelOpen ? 'flex-1' : 'shrink-0'"
+      >
+        <div
+          class="p-3 bg-gray-50 flex cursor-pointer items-center justify-between dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800"
+          @click="isGeoJsonPanelOpen = !isGeoJsonPanelOpen"
+        >
+          <div class="flex gap-2 items-center">
+            <div class="i-carbon-code text-gray-500" />
+            <span class="text-sm text-gray-700 font-bold dark:text-gray-200">GeoJSON 数据</span>
+            <span v-if="selectedFeatureId" class="text-xs text-teal-600 px-1.5 py-0.5 rounded bg-teal-50 dark:text-teal-400 dark:bg-teal-900/30">Selected</span>
           </div>
-          <div class="mb-2 flex gap-2">
-            <input
-              v-model="newPropKey"
-              placeholder="Key (e.g. stroke)"
-              class="text-sm px-2 py-1.5 outline-none border border-gray-300 rounded bg-white flex-1 min-w-0 dark:border-gray-600 focus:border-teal-500 dark:bg-gray-800"
-              @keyup.enter="addProperty"
+          <div class="flex gap-1 items-center">
+            <button
+              class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+              title="复制 JSON"
+              @click.stop="handleCopyGeoJson"
             >
-            <input
-              v-model="newPropValue"
-              placeholder="Value"
-              class="text-sm px-2 py-1.5 outline-none border border-gray-300 rounded bg-white flex-1 min-w-0 dark:border-gray-600 focus:border-teal-500 dark:bg-gray-800"
-              @keyup.enter="addProperty"
-            >
+              <div :class="isCopied ? 'i-carbon-checkmark text-green-500' : 'i-carbon-copy'" />
+            </button>
+            <div
+              class="i-carbon-chevron-down text-gray-400 transition-transform duration-300"
+              :class="{ 'rotate-180': isGeoJsonPanelOpen }"
+            />
           </div>
-          <button
-            class="text-sm text-gray-700 py-1.5 rounded bg-gray-200 w-full transition dark:text-gray-300 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-            :disabled="!newPropKey"
-            @click="addProperty"
-          >
-            添加
-          </button>
+        </div>
+        <div class="bg-gray-50/50 flex-1 min-h-0 relative dark:bg-gray-900/20">
+          <div class="p-3 inset-0 absolute overflow-auto">
+            <pre class="text-[10px] text-gray-600 leading-relaxed font-mono whitespace-pre-wrap break-all dark:text-gray-400">{{ displayGeoJson }}</pre>
+          </div>
         </div>
       </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
