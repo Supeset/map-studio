@@ -38,7 +38,39 @@ const drawStyles = [
       'fill-outline-color': ['coalesce', ['get', 'user_stroke'], '#fbb03b'],
     },
   },
-  // 3. Line/Stroke (Inactive)
+
+  // 3. Polygon Stroke (Inactive)
+  {
+    id: 'gl-draw-polygon-stroke-inactive',
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': ['coalesce', ['get', 'user_stroke'], '#3bb2d0'],
+      'line-width': ['coalesce', ['get', 'user_stroke-width'], 2],
+      'line-opacity': ['coalesce', ['get', 'user_stroke-opacity'], 1],
+    },
+  },
+  // 4. Polygon Stroke (Active)
+  {
+    id: 'gl-draw-polygon-stroke-active',
+    type: 'line',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': ['coalesce', ['get', 'user_stroke'], '#fbb03b'],
+      'line-dasharray': [0.2, 2],
+      'line-width': ['coalesce', ['get', 'user_stroke-width'], 2],
+      'line-opacity': ['coalesce', ['get', 'user_stroke-opacity'], 1],
+    },
+  },
+  // 5. Line/Stroke (Inactive)
   {
     id: 'gl-draw-line-inactive',
     type: 'line',
@@ -53,7 +85,7 @@ const drawStyles = [
       'line-opacity': ['coalesce', ['get', 'user_stroke-opacity'], 1],
     },
   },
-  // 4. Line/Stroke (Active)
+  // 6. Line/Stroke (Active)
   {
     id: 'gl-draw-line-active',
     type: 'line',
@@ -69,7 +101,7 @@ const drawStyles = [
       'line-opacity': ['coalesce', ['get', 'user_stroke-opacity'], 1],
     },
   },
-  // 5. Point (Inactive) - using Circle for better performance than Symbol
+  // 7. Point (Inactive) - using Circle for better performance than Symbol
   {
     id: 'gl-draw-point-inactive',
     type: 'circle',
@@ -81,7 +113,7 @@ const drawStyles = [
       'circle-stroke-color': '#fff',
     },
   },
-  // 6. Point (Active)
+  // 8. Point (Active)
   {
     id: 'gl-draw-point-active',
     type: 'circle',
