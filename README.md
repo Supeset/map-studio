@@ -8,73 +8,73 @@
 
 <p align="center">
 <br>
-<a href="https://vitesse-nuxt3.netlify.app/">🖥 Online Preview</a>
+<a href="https://vitesse-nuxt3.netlify.app/">🖥 在线预览</a>
 <br><br>
 <a href="https://stackblitz.com/github/antfu/vitesse-nuxt"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
 </p>
 
-## Features
+## 特性
 
-- 💚 [Nuxt 4](https://nuxt.com/) - SSR, ESR, File-based routing, components auto importing, modules, etc.
+- 💚 [Nuxt 4](https://nuxt.com/) - SSR, ESR, 基于文件的路由, 组件自动导入, 模块等.
 
-- ⚡️ Vite - Instant HMR.
+- ⚡️ Vite - 即时热更新.
 
-- 🎨 [UnoCSS](https://github.com/unocss/unocss) - The instant on-demand atomic CSS engine.
+- 🎨 [UnoCSS](https://github.com/unocss/unocss) - 即时按需原子化 CSS 引擎.
 
-- 😃 Use icons from any icon sets in Pure CSS, powered by [UnoCSS](https://github.com/unocss/unocss).
+- 😃 使用来自任何图标集的纯 CSS 图标, 由 [UnoCSS](https://github.com/unocss/unocss) 提供支持.
 
-- 🔥 The `<script setup>` syntax.
+- 🔥 `<script setup>` 语法.
 
-- 🍍 [State Management via Pinia](https://github.com/vuejs/pinia), see [./app/composables/user.ts](./app/composables/user.ts).
+- 🍍 [通过 Pinia 进行状态管理](https://github.com/vuejs/pinia), 请参阅 [./app/composables/user.ts](./app/composables/user.ts).
 
-- 📑 [Layout system](./app/layouts).
+- 📑 [布局系统](./app/layouts).
 
-- 📥 APIs auto importing - for Composition API, VueUse and custom composables.
+- 📥 API 自动导入 - 用于 Composition API, VueUse 和自定义组合式函数.
 
-- 🏎 Zero-config cloud functions and deploy.
+- 🏎 零配置云函数和部署.
 
-- 🦾 TypeScript, of course.
+- 🦾 TypeScript, 当然.
 
-- 📲 [PWA](https://github.com/vite-pwa/nuxt) with offline support and auto-update behavior.
+- 📲 [PWA](https://github.com/vite-pwa/nuxt) 具有离线支持和自动更新行为.
 
-## Plugins
+## 插件
 
-### Nuxt Modules
+### Nuxt 模块
 
-- [VueUse](https://github.com/vueuse/vueuse) - collection of useful composition APIs.
-- [ColorMode](https://github.com/nuxt-modules/color-mode) - dark and Light mode with auto detection made easy with Nuxt.
-- [UnoCSS](https://github.com/unocss/unocss) - the instant on-demand atomic CSS engine.
-- [Pinia](https://github.com/vuejs/pinia) - intuitive, type safe, light and flexible Store for Vue.
-- [VitePWA](https://github.com/vite-pwa/nuxt) - zero-config PWA Plugin for Nuxt 4.
-- [DevTools](https://github.com/nuxt/devtools) - unleash Nuxt Developer Experience.
+- [VueUse](https://github.com/vueuse/vueuse) - 有用的组合式 API 集合.
+- [ColorMode](https://github.com/nuxt-modules/color-mode) - Nuxt 轻松实现具有自动检测功能的深色和浅色模式.
+- [UnoCSS](https://github.com/unocss/unocss) - 即时按需原子化 CSS 引擎.
+- [Pinia](https://github.com/vuejs/pinia) - 直观、类型安全、轻量且灵活的 Vue Store.
+- [VitePWA](https://github.com/vite-pwa/nuxt) - Nuxt 4 的零配置 PWA 插件.
+- [DevTools](https://github.com/nuxt/devtools) - 释放 Nuxt 开发人员体验.
 
 ## IDE
 
-We recommend using [VS Code](https://code.visualstudio.com/) with [Volar](https://github.com/johnsoncodehk/volar) to get the best experience (You might want to disable [Vetur](https://vuejs.github.io/vetur/) if you have it).
+我们建议使用 [VS Code](https://code.visualstudio.com/) 和 [Volar](https://github.com/johnsoncodehk/volar) 来获得最佳体验 (您可能需要禁用 [Vetur](https://vuejs.github.io/vetur/) 如果您已安装它).
 
-## Variations
+## 变体
 
-- [vitesse](https://github.com/antfu/vitesse) - Opinionated Vite Starter Template
-- [vitesse-lite](https://github.com/antfu/vitesse-lite) - Lightweight version of Vitesse
+- [vitesse](https://github.com/antfu/vitesse) - 自以为是的 Vite 入门模板
+- [vitesse-lite](https://github.com/antfu/vitesse-lite) - Vitesse 的轻量级版本
 - [vitesse-nuxt-bridge](https://github.com/antfu/vitesse-nuxt-bridge) - Vitesse for Nuxt 2 with Bridge
-- [vitesse-webext](https://github.com/antfu/vitesse-webext) - WebExtension Vite starter template
+- [vitesse-webext](https://github.com/antfu/vitesse-webext) - WebExtension Vite 入门模板
 
-## Try it now!
+## 立即尝试!
 
-### Online
+### 在线
 
 <a href="https://stackblitz.com/github/antfu/vitesse-nuxt"><img src="https://developer.stackblitz.com/img/open_in_stackblitz.svg" alt=""></a>
 
-### GitHub Template
+### GitHub 模板
 
-[Create a repo from this template on GitHub](https://github.com/antfu/vitesse-nuxt/generate).
+[在 GitHub 上从此模板创建存储库](https://github.com/antfu/vitesse-nuxt/generate).
 
-### Clone to local
+### 克隆到本地
 
-If you prefer to do it manually with the cleaner git history
+如果您喜欢使用更干净的 git 历史记录手动执行此操作
 
 ```bash
 npx degit antfu/vitesse-nuxt my-nuxt-app
 cd my-nuxt-app
-pnpm i # If you don't have pnpm installed, run: npm install -g pnpm
+pnpm i # 如果您没有安装 pnpm, 请运行: npm install -g pnpm
 ```
