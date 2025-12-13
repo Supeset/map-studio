@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Feature } from 'geojson'
+import type { Feature, FeatureCollection } from 'geojson'
 import type { IControl } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 
@@ -111,7 +111,7 @@ const drawInstance = shallowRef<MapboxDraw | null>(null)
 const savedFeatures = useLocalStorage(STORAGE_KEY, {
   type: 'FeatureCollection',
   features: [],
-} as any)
+} as FeatureCollection)
 
 const selectedFeatureId = ref<string | null>(null)
 const selectedFeatureProps = ref<Record<string, any>>({})
@@ -137,7 +137,7 @@ function initDraw() {
 
   mapInstance.value.addControl(draw as unknown as IControl, 'top-left')
   drawInstance.value = draw
-
+  console.warn('Draw instance created', JSON.stringify(savedFeatures.value))
   // 加载保存的数据
   if (savedFeatures.value && savedFeatures.value.features.length > 0) {
     draw.set(savedFeatures.value)
@@ -465,7 +465,7 @@ function handleCopyGeoJson() {
                   <input
                     :value="value"
                     class="text-sm text-gray-800 font-medium outline-none border-none bg-transparent flex-1 w-full dark:text-gray-200"
-                    @change="(e) => updateFeatureProperty(String(key), (e.target as HTMLInputElement).value)"
+                    @change="(e) => updateFeatureProperty(String(key), Number((e.target as HTMLInputElement).value))"
                   >
                 </div>
               </div>
