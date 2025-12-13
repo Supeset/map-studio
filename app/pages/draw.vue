@@ -2,6 +2,7 @@
 import type { Feature, FeatureCollection } from 'geojson'
 import type { IControl } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
+import mapboxgl from 'mapbox-gl'
 
 defineOptions({
   name: 'DrawPage',
@@ -169,9 +170,85 @@ function initDraw() {
 
   mapInstance.value.addControl(draw as unknown as IControl, 'top-left')
   drawInstance.value = draw
-  console.warn('Draw instance created', JSON.stringify(savedFeatures.value))
-  // 加载保存的数据
-  if (savedFeatures.value && savedFeatures.value.features.length > 0) {
+
+  // --- 处理 URL 参数中的 GeoJSON 数据 ---
+  const route = useRoute()
+  const urlData = route.query.data as string
+  let isLoadedFromUrl = false
+
+  if (urlData) {
+    try {
+      let jsonStr = urlData
+      // 兼容 geojson.io 的 data:application/json, 前缀格式
+      const prefix = 'data:application/json,'
+      if (jsonStr.startsWith(prefix)) {
+        jsonStr = jsonStr.slice(prefix.length)
+      }
+
+      // 尝试解析，如果包含 URL 编码字符则先解码
+      let parsed
+      try {
+        parsed = JSON.parse(jsonStr)
+      }
+      catch {
+        parsed = JSON.parse(decodeURIComponent(jsonStr))
+      }
+
+      // 归一化为 FeatureCollection
+      let collection: FeatureCollection | null = null
+
+      if (parsed.type === 'FeatureCollection') {
+        collection = parsed
+      }
+      else if (parsed.type === 'Feature') {
+        collection = { type: 'FeatureCollection', features: [parsed] }
+      }
+      else if (parsed.coordinates || parsed.geometries) {
+        // 简单的 Geometry 或 GeometryCollection 支持
+        collection = {
+          type: 'FeatureCollection',
+          features: [{ type: 'Feature', geometry: parsed, properties: {} } as Feature],
+        }
+      }
+
+      if (collection && collection.features.length > 0) {
+        // 更新本地存储并设置到 Draw 实例
+        savedFeatures.value = collection
+        draw.set(collection)
+        isLoadedFromUrl = true
+
+        // 自动缩放地图至数据范围
+        const bounds = new mapboxgl.LngLatBounds()
+        const extendBounds = (coords: any) => {
+          if (Array.isArray(coords)) {
+            // 判断是否为坐标点 [lng, lat]
+            if (coords.length >= 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+              bounds.extend(coords as [number, number])
+            }
+            else {
+              coords.forEach(c => extendBounds(c))
+            }
+          }
+        }
+
+        collection.features.forEach((f) => {
+          if (f.geometry && 'coordinates' in f.geometry) {
+            extendBounds(f.geometry.coordinates)
+          }
+        })
+
+        if (!bounds.isEmpty()) {
+          mapInstance.value.fitBounds(bounds, { padding: 100, maxZoom: 15 })
+        }
+      }
+    }
+    catch (e) {
+      console.error('Failed to load GeoJSON from URL:', e)
+    }
+  }
+
+  // 如果没有从 URL 加载数据，则加载本地保存的数据
+  if (!isLoadedFromUrl && savedFeatures.value && savedFeatures.value.features.length > 0) {
     draw.set(savedFeatures.value)
   }
 
@@ -328,6 +405,7 @@ const selectedTypeLabel = computed(() => {
 // --- GeoJSON Panel State ---
 const isGeoJsonPanelOpen = ref(false)
 const { copy: copyToClipboard, copied: isCopied } = useClipboard()
+const { copy: copyShareLink, copied: isShareLinkCopied } = useClipboard()
 
 const displayGeoJson = computed(() => {
   // 如果选中了要素，只显示该要素的 JSON
@@ -341,6 +419,15 @@ const displayGeoJson = computed(() => {
 
 function handleCopyGeoJson() {
   copyToClipboard(displayGeoJson.value)
+}
+
+function handleCopyShareLink() {
+  // 分享时始终分享全部数据，使用压缩格式
+  const json = JSON.stringify(savedFeatures.value)
+  // 构造 data URL 格式，兼容 geojson.io
+  const dataParam = `data:application/json,${encodeURIComponent(json)}`
+  const url = `${window.location.origin}${window.location.pathname}?data=${dataParam}`
+  copyShareLink(url)
 }
 </script>
 
@@ -549,6 +636,13 @@ function handleCopyGeoJson() {
             <span v-if="selectedFeatureId" class="text-xs text-teal-600 px-1.5 py-0.5 rounded bg-teal-50 dark:text-teal-400 dark:bg-teal-900/30">Selected</span>
           </div>
           <div class="flex gap-1 items-center">
+            <button
+              class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+              title="复制分享链接"
+              @click.stop="handleCopyShareLink"
+            >
+              <div :class="isShareLinkCopied ? 'i-carbon-checkmark text-green-500' : 'i-carbon-link'" />
+            </button>
             <button
               class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
               title="复制 JSON"
