@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type Sun from 'astronomy-bundle/sun/Sun'
 import type TimeOfInterest from 'astronomy-bundle/time/TimeOfInterest'
 import type { FeatureCollection } from 'geojson'
 import type { GeoJSONSource, Map, MapMouseEvent } from 'mapbox-gl'
@@ -7,6 +6,7 @@ import { createLocation } from 'astronomy-bundle/earth'
 import { createSun } from 'astronomy-bundle/sun'
 import { createTimeOfInterest } from 'astronomy-bundle/time'
 import dayjs from 'dayjs'
+import AstroInfoPanel from '~/components/astro/InfoPanel.vue'
 
 defineOptions({
   name: 'AstroPage',
@@ -383,50 +383,14 @@ onUnmounted(() => {
       </NuxtLink>
     </header>
 
-    <!-- 信息面板 -->
-    <div
-      class="p-4 rounded-lg bg-white/80 w-80 shadow-lg left-4 top-20 absolute z-10 backdrop-blur-sm dark:bg-gray-800/80"
-    >
-      <h2 class="text-lg font-semibold mb-2">
-        太阳信息 (当地时区)
-      </h2>
-      <div v-if="!selectedPoint" class="text-gray-500">
-        请在地图上点击任意位置以获取信息。
-      </div>
-      <div v-else>
-        <div class="text-sm mb-3">
-          <p>
-            <span class="font-medium w-12 inline-block">经度:</span> {{ selectedPoint.lng.toFixed(4) }}
-          </p>
-          <p>
-            <span class="font-medium w-12 inline-block">纬度:</span> {{ selectedPoint.lat.toFixed(4) }}
-          </p>
-        </div>
-        <div v-if="isLoading" class="p-4 text-center">
-          计算中...
-        </div>
-        <div v-else-if="calculationError" class="text-sm text-red-500">
-          {{ calculationError }}
-        </div>
-        <div v-else-if="astroInfo" class="text-sm space-y-1">
-          <p>
-            <span class="font-medium w-24 inline-block">日出方位角:</span> {{ astroInfo.sunriseAzimuth.toFixed(2) }}°
-          </p>
-          <p>
-            <span class="font-medium w-24 inline-block">日落方位角:</span> {{ astroInfo.sunsetAzimuth.toFixed(2) }}°
-          </p>
-          <hr class="my-2 border-gray-300 dark:border-gray-600">
-          <p>
-            <span class="font-medium w-24 inline-block">日出时间:</span> {{ astroInfo.sunriseTime }}
-          </p>
-          <p>
-            <span class="font-medium w-24 inline-block">太阳凌日:</span> {{ astroInfo.solarNoonTime }}
-          </p>
-          <p>
-            <span class="font-medium w-24 inline-block">日落时间:</span> {{ astroInfo.sunsetTime }}
-          </p>
-        </div>
-      </div>
+    <!-- 右侧面板容器 (保持与其他页面一致的布局风格) -->
+    <div class="flex flex-col gap-3 h-65vh w-80 pointer-events-none right-4 top-20 absolute z-20">
+      <AstroInfoPanel
+        :selected-point="selectedPoint"
+        :is-loading="isLoading"
+        :calculation-error="calculationError"
+        :astro-info="astroInfo"
+      />
     </div>
   </div>
 </template>
