@@ -1,0 +1,572 @@
+[
+  {
+    "record_id": "rec31hdIS4",
+    "latitude": 25.9962,
+    "longitude": -97.154423,
+    "name": "Pad 1",
+    "location_name_en": "Pad 1, Starbase, Texas, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "SpaceX星港",
+    "coordinates": "-97.154423,25.9962"
+  },
+  {
+    "record_id": "recv2UksMtyEaH",
+    "latitude": -2.316733,
+    "longitude": -44.368537,
+    "name": "Innospace Pad",
+    "location_name_en": "Innospace Pad, Alcântara Launch Center, Maranhão, Brazil",
+    "country": "🇧🇷巴西",
+    "launch_center": "阿尔坎塔拉航天中心",
+    "coordinates": "-44.368537,-2.316733"
+  },
+  {
+    "record_id": "recuKFq0tZbthQ",
+    "latitude": 69.108602,
+    "longitude": 15.588986,
+    "name": "Orbital Launch Pad",
+    "location_name_en": "Orbital Launch Pad, Andøya Rocket Range, Nordland, Norway",
+    "country": "🇳🇴挪威",
+    "launch_center": "安德亚火箭靶场轨道发射台",
+    "coordinates": "15.588986,69.108602"
+  },
+  {
+    "record_id": "recdqfh3YD",
+    "latitude": 46.039805,
+    "longitude": 63.031955,
+    "name": "Site 200/39",
+    "location_name_en": "Site 200/39, Baikonur Cosmodrome, Kazakhstan",
+    "country": "🇰🇿哈萨克斯坦",
+    "launch_center": "拜科努尔航天发射场",
+    "coordinates": "63.031955,46.039805"
+  },
+  {
+    "record_id": "rec6sRK2YC",
+    "latitude": 45.996095,
+    "longitude": 63.564084,
+    "name": "Site 31/6",
+    "location_name_en": "Site 31/6, Baikonur Cosmodrome, Kazakhstan",
+    "country": "🇰🇿哈萨克斯坦",
+    "launch_center": "拜科努尔航天发射场",
+    "coordinates": "63.564084,45.996095"
+  },
+  {
+    "record_id": "recuMzGRzR9jN7",
+    "latitude": 46.07082,
+    "longitude": 62.984611,
+    "name": "Site 81/24",
+    "location_name_en": "Site 81/24, Baikonur Cosmodrome, Kazakhstan",
+    "country": "🇰🇿哈萨克斯坦",
+    "launch_center": "拜科努尔航天发射场",
+    "coordinates": "62.984611,46.07082"
+  },
+  {
+    "record_id": "recuWYyoKdcVus",
+    "latitude": -19.958365,
+    "longitude": 148.113348,
+    "name": "Orbital Launch Pad",
+    "location_name_en": "Orbital Launch Pad, Bowen Orbital Spaceport, Australia",
+    "country": "🇦🇺澳大利亚",
+    "launch_center": "鲍文轨道航天港",
+    "coordinates": "148.113348,-19.958365"
+  },
+  {
+    "record_id": "recua7rKXMWG0u",
+    "latitude": 51.874418,
+    "longitude": 128.355063,
+    "name": "Site 1A",
+    "location_name_en": "Site 1A, Vostochny Cosmodrome, Russia",
+    "country": "🇷🇺俄罗斯",
+    "launch_center": "东方航天发射场",
+    "coordinates": "128.355063,51.874418"
+  },
+  {
+    "record_id": "recE8cV807",
+    "latitude": 51.884479,
+    "longitude": 128.334834,
+    "name": "Site 1S",
+    "location_name_en": "Site 1S, Vostochny Cosmodrome, Russia",
+    "country": "🇷🇺俄罗斯",
+    "launch_center": "东方航天发射场",
+    "coordinates": "128.334834,51.884479"
+  },
+  {
+    "record_id": "recPR3uaED",
+    "latitude": 34.755648,
+    "longitude": -120.622401,
+    "name": "SLC-2W",
+    "location_name_en": "SLC-2W, Vandenberg SFB, California, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "范登堡空军基地",
+    "coordinates": "-120.622401,34.755648"
+  },
+  {
+    "record_id": "recEYOYY9J",
+    "latitude": 34.632041,
+    "longitude": -120.610633,
+    "name": "SLC-4E",
+    "location_name_en": "SLC-4E, Vandenberg SFB, California, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "范登堡空军基地",
+    "coordinates": "-120.610633,34.632041"
+  },
+  {
+    "record_id": "recuIHQrMwV7sn",
+    "latitude": 34.576332,
+    "longitude": -120.632462,
+    "name": "SLC-8",
+    "location_name_en": "SLC-8, Vandenberg SFB, California, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "范登堡空军基地",
+    "coordinates": "-120.632462,34.576332"
+  },
+  {
+    "record_id": "rec7q4KLd7",
+    "latitude": 5.240277,
+    "longitude": -52.768431,
+    "name": "ELA-3",
+    "location_name_en": "ELA-3, Guiana Space Centre, French Guiana, France",
+    "country": "🇬🇫法属圭亚那",
+    "launch_center": "圭亚那航天中心",
+    "coordinates": "-52.768431,5.240277"
+  },
+  {
+    "record_id": "recuIHSIILav7g",
+    "latitude": 5.264605,
+    "longitude": -52.79219,
+    "name": "ELA-4",
+    "location_name_en": "ELA-4, Guiana Space Centre, French Guiana, France",
+    "country": "🇬🇫法属圭亚那",
+    "launch_center": "圭亚那航天中心",
+    "coordinates": "-52.79219,5.264605"
+  },
+  {
+    "record_id": "recDC4Aag9",
+    "latitude": 5.304456,
+    "longitude": -52.834491,
+    "name": "ELS",
+    "location_name_en": "ELS, Guiana Space Centre, French Guiana, France",
+    "country": "🇬🇫法属圭亚那",
+    "launch_center": "圭亚那航天中心",
+    "coordinates": "-52.834491,5.304456"
+  },
+  {
+    "record_id": "recpqJaZR5",
+    "latitude": 5.236893,
+    "longitude": -52.774937,
+    "name": "ELV",
+    "location_name_en": "ELV, Guiana Space Centre, French Guiana, France",
+    "country": "🇬🇫法属圭亚那",
+    "launch_center": "圭亚那航天中心",
+    "coordinates": "-52.774937,5.236893"
+  },
+  {
+    "record_id": "recA5Gzlw2",
+    "latitude": -39.261577,
+    "longitude": 177.86515,
+    "name": "Rocket Lab LC-1A",
+    "location_name_en": "Rocket Lab LC-1A, Māhia Peninsula, New Zealand",
+    "country": "🇳🇿新西兰",
+    "launch_center": "火箭实验室1号发射复合体",
+    "coordinates": "177.86515,-39.261577"
+  },
+  {
+    "record_id": "recuWjVdGQ",
+    "latitude": -39.260514,
+    "longitude": 177.865203,
+    "name": "Rocket Lab LC-1B",
+    "location_name_en": "Rocket Lab LC-1B, Māhia Peninsula, New Zealand",
+    "country": "🇳🇿新西兰",
+    "launch_center": "火箭实验室1号发射复合体",
+    "coordinates": "177.865203,-39.260514"
+  },
+  {
+    "record_id": "recu7lHNe6THm6",
+    "latitude": 33.544224,
+    "longitude": 135.889502,
+    "name": "Space One Launch Pad",
+    "location_name_en": "Space One Launch Pad, Space Port Kii, Japan",
+    "country": "🇯🇵日本",
+    "launch_center": "纪伊航天港",
+    "coordinates": "135.889502,33.544224"
+  },
+  {
+    "record_id": "recuMzGto8E92n",
+    "latitude": 40.855242,
+    "longitude": 100.199634,
+    "name": "Site 120",
+    "location_name_en": "Site 120, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.199634,40.855242"
+  },
+  {
+    "record_id": "recKCGGriN",
+    "latitude": 40.8182,
+    "longitude": 100.22514,
+    "name": "Site 130",
+    "location_name_en": "Site 130, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.22514,40.8182"
+  },
+  {
+    "record_id": "recv4TmhnaUA0z",
+    "latitude": 40.960749,
+    "longitude": 100.298164,
+    "name": "Site 94 (SLS-2)",
+    "location_name_en": "Site 94 (SLS-2), Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.298164,40.960749"
+  },
+  {
+    "record_id": "recKDy3u9I",
+    "latitude": 40.969108,
+    "longitude": 100.343365,
+    "name": "Site 95A",
+    "location_name_en": "Site 95A, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.343365,40.969108"
+  },
+  {
+    "record_id": "recv3TB69Vwlef",
+    "latitude": 40.92017,
+    "longitude": 100.25129,
+    "name": "Site 96B",
+    "location_name_en": "Site 96B, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.25129,40.92017"
+  },
+  {
+    "record_id": "rec0IcYYv7",
+    "latitude": 28.608298,
+    "longitude": -80.604159,
+    "name": "LC-39A",
+    "location_name_en": "LC-39A, Kennedy Space Center, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "肯尼迪航天中心",
+    "coordinates": "-80.604159,28.608298"
+  },
+  {
+    "record_id": "recks7b4A2",
+    "latitude": 33.216667,
+    "longitude": 126.366667,
+    "name": "ADD Offshore launch platform",
+    "location_name_en": "ADD Offshore launch platform, Jeju Island, South Korea",
+    "country": "🇰🇷韩国",
+    "launch_center": "罗老宇宙中心",
+    "coordinates": "126.366667,33.216667"
+  },
+  {
+    "record_id": "recuMzGfU2QvMZ",
+    "latitude": 34.4317841,
+    "longitude": 127.5343226,
+    "name": "LC-2",
+    "location_name_en": "LC-2, Naro Space Center, South Korea",
+    "country": "🇰🇷韩国",
+    "launch_center": "罗老宇宙中心",
+    "coordinates": "127.5343226,34.4317841"
+  },
+  {
+    "record_id": "recJTjJseh",
+    "latitude": 32.9902778,
+    "longitude": -106.96972,
+    "name": "VMS Eve",
+    "location_name_en": "VMS Eve, Spaceport America, New Mexico, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "美国航天港",
+    "coordinates": "-106.96972,32.9902778"
+  },
+  {
+    "record_id": "recrNxjbZY",
+    "latitude": 31.88464,
+    "longitude": 34.680203,
+    "name": "Pad 1",
+    "location_name_en": "Pad 1, Palmachim Airbase, Israel",
+    "country": "🇮🇱以色列",
+    "launch_center": "帕勒马希姆空军基地",
+    "coordinates": "34.680203,31.88464"
+  },
+  {
+    "record_id": "recjnpFNx8",
+    "latitude": 62.927664,
+    "longitude": 40.575042,
+    "name": "Site 35/1",
+    "location_name_en": "Site 35/1, Plesetsk Cosmodrome, Russia",
+    "country": "🇷🇺俄罗斯",
+    "launch_center": "普列谢茨克航天发射场",
+    "coordinates": "40.575042,62.927664"
+  },
+  {
+    "record_id": "recJ1xrf3W",
+    "latitude": 62.927298,
+    "longitude": 40.449308,
+    "name": "Site 43/3",
+    "location_name_en": "Site 43/3, Plesetsk Cosmodrome, Russia",
+    "country": "🇷🇺俄罗斯",
+    "launch_center": "普列谢茨克航天发射场",
+    "coordinates": "40.449308,62.927298"
+  },
+  {
+    "record_id": "recdjXggHz",
+    "latitude": 62.928826,
+    "longitude": 40.456561,
+    "name": "Site 43/4",
+    "location_name_en": "Site 43/4, Plesetsk Cosmodrome, Russia",
+    "country": "🇷🇺俄罗斯",
+    "launch_center": "普列谢茨克航天发射场",
+    "coordinates": "40.456561,62.928826"
+  },
+  {
+    "record_id": "recRzaOiUZ",
+    "latitude": 28.5017,
+    "longitude": -80.551836,
+    "name": "LC-16",
+    "location_name_en": "LC-16, Cape Canaveral SFS, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "卡纳维拉尔角空军站",
+    "coordinates": "-80.551836,28.5017"
+  },
+  {
+    "record_id": "recuIHTgN8BC5O",
+    "latitude": 28.471819,
+    "longitude": -80.538195,
+    "name": "LC-36",
+    "location_name_en": "LC-36, Cape Canaveral SFS, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "卡纳维拉尔角空军站",
+    "coordinates": "-80.538195,28.471819"
+  },
+  {
+    "record_id": "recXsQyXPC",
+    "latitude": 28.531175,
+    "longitude": -80.564514,
+    "name": "SLC-37B",
+    "location_name_en": "SLC-37B, Cape Canaveral SFS, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "卡纳维拉尔角空军站",
+    "coordinates": "-80.564514,28.531175"
+  },
+  {
+    "record_id": "recdnSpxiU",
+    "latitude": 28.561997,
+    "longitude": -80.5772,
+    "name": "SLC-40",
+    "location_name_en": "SLC-40, Cape Canaveral SFS, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "卡纳维拉尔角空军站",
+    "coordinates": "-80.5772,28.561997"
+  },
+  {
+    "record_id": "recqj1cxJm",
+    "latitude": 28.583465,
+    "longitude": -80.582886,
+    "name": "SLC-41",
+    "location_name_en": "SLC-41, Cape Canaveral SFS, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "卡纳维拉尔角空军站",
+    "coordinates": "-80.582886,28.583465"
+  },
+  {
+    "record_id": "recYajUYcr",
+    "latitude": 13.733307,
+    "longitude": 80.234808,
+    "name": "First Launch Pad",
+    "location_name_en": "First Launch Pad, Satish Dhawan Space Centre, India",
+    "country": "🇮🇳印度",
+    "launch_center": "萨迪什·达万航天中心",
+    "coordinates": "80.234808,13.733307"
+  },
+  {
+    "record_id": "recqLPs3XZ",
+    "latitude": 13.719821,
+    "longitude": 80.230483,
+    "name": "Second Launch Pad",
+    "location_name_en": "Second Launch Pad, Satish Dhawan Space Centre, India",
+    "country": "🇮🇳印度",
+    "launch_center": "萨迪什·达万航天中心",
+    "coordinates": "80.230483,13.719821"
+  },
+  {
+    "record_id": "recklsl1RX",
+    "latitude": 36.200595,
+    "longitude": 55.333939,
+    "name": "Launch Platform",
+    "location_name_en": "Launch Platform, Shahrud Missile Test Site, Iran",
+    "country": "🇮🇷伊朗",
+    "launch_center": "沙赫鲁德",
+    "coordinates": "55.333939,36.200595"
+  },
+  {
+    "record_id": "recd1NPbqj",
+    "latitude": 38.86822,
+    "longitude": 111.580261,
+    "name": "LC-16",
+    "location_name_en": "LC-16, Taiyuan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "太原卫星发射中心",
+    "coordinates": "111.580261,38.86822"
+  },
+  {
+    "record_id": "recq9SwLmd",
+    "latitude": 38.863172,
+    "longitude": 111.589651,
+    "name": "LC-9",
+    "location_name_en": "LC-9, Taiyuan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "太原卫星发射中心",
+    "coordinates": "111.589651,38.863172"
+  },
+  {
+    "record_id": "rec3ogNHwk",
+    "latitude": 38.858619,
+    "longitude": 111.584751,
+    "name": "LC-9A",
+    "location_name_en": "LC-9A, Taiyuan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "太原卫星发射中心",
+    "coordinates": "111.584751,38.858619"
+  },
+  {
+    "record_id": "recuKFqIvZMS1X",
+    "latitude": 19.596982,
+    "longitude": 110.930789,
+    "name": "Commercial LC-1",
+    "location_name_en": "Commercial LC-1, Wenchang Space Launch Site, China",
+    "country": "🇨🇳中国",
+    "launch_center": "文昌航天发射场",
+    "coordinates": "110.930789,19.596982"
+  },
+  {
+    "record_id": "recuKFr7nhNsUx",
+    "latitude": 19.597518,
+    "longitude": 110.936483,
+    "name": "Commercial LC-2",
+    "location_name_en": "Commercial LC-2, Wenchang Space Launch Site, China",
+    "country": "🇨🇳中国",
+    "launch_center": "文昌航天发射场",
+    "coordinates": "110.936483,19.597518"
+  },
+  {
+    "record_id": "recHsVhFhp",
+    "latitude": 19.614589,
+    "longitude": 110.951145,
+    "name": "LC-101",
+    "location_name_en": "LC-101, Wenchang Space Launch Site, China",
+    "country": "🇨🇳中国",
+    "launch_center": "文昌航天发射场",
+    "coordinates": "110.951145,19.614589"
+  },
+  {
+    "record_id": "recHRoWWx5",
+    "latitude": 19.618658,
+    "longitude": 110.955425,
+    "name": "LC-201",
+    "location_name_en": "LC-201, Wenchang Space Launch Site, China",
+    "country": "🇨🇳中国",
+    "launch_center": "文昌航天发射场",
+    "coordinates": "110.955425,19.618658"
+  },
+  {
+    "record_id": "recR51EagR",
+    "latitude": 28.245266,
+    "longitude": 102.026982,
+    "name": "LC-2",
+    "location_name_en": "LC-2, Xichang Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "西昌卫星发射中心",
+    "coordinates": "102.026982,28.245266"
+  },
+  {
+    "record_id": "recxuIczmF",
+    "latitude": 28.24696,
+    "longitude": 102.029048,
+    "name": "LC-3",
+    "location_name_en": "LC-3, Xichang Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "西昌卫星发射中心",
+    "coordinates": "102.029048,28.24696"
+  },
+  {
+    "record_id": "recIgfDqIv",
+    "latitude": 28.242774,
+    "longitude": 102.032944,
+    "name": "Mobile Launcher Pad",
+    "location_name_en": "Mobile Launcher Pad, Xichang Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "西昌卫星发射中心",
+    "coordinates": "102.032944,28.242774"
+  },
+  {
+    "record_id": "recuKEKz6Tjpzp",
+    "latitude": 31.422927,
+    "longitude": -104.757152,
+    "name": "Launch Site One",
+    "location_name_en": "Launch Site One, West Texas, Texas, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "西德克萨斯州发射基地",
+    "coordinates": "-104.757152,31.422927"
+  },
+  {
+    "record_id": "recukUdKVL",
+    "latitude": 39.652861,
+    "longitude": 124.736444,
+    "name": "Pad 2",
+    "location_name_en": "Pad 2, Sohae Satellite Launching Station, North Korea",
+    "country": "🇰🇵朝鲜",
+    "launch_center": "西海卫星发射场",
+    "coordinates": "124.736444,39.652861"
+  },
+  {
+    "record_id": "rec0VEM7nN",
+    "latitude": 35.237011,
+    "longitude": 53.950635,
+    "name": "Imam Khomeini Spaceport",
+    "location_name_en": "Imam Khomeini Spaceport, Semnan Space Center, Iran",
+    "country": "🇮🇷伊朗",
+    "launch_center": "伊玛目霍梅尼航天发射站",
+    "coordinates": "53.950635,35.237011"
+  },
+  {
+    "record_id": "recM5prQZk",
+    "latitude": 37.833878,
+    "longitude": -75.487702,
+    "name": "LP-0A",
+    "location_name_en": "LP-0A, Wallops Flight Facility, Virginia, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "中大西洋区太空空港",
+    "coordinates": "-75.487702,37.833878"
+  },
+  {
+    "record_id": "recy0nKaPC",
+    "latitude": 37.833262,
+    "longitude": -75.488235,
+    "name": "Rocket Lab LC-2 (LP-0C)",
+    "location_name_en": "Rocket Lab LC-2 (LP-0C), Wallops Flight Facility, Virginia, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "中大西洋区太空空港",
+    "coordinates": "-75.488235,37.833262"
+  },
+  {
+    "record_id": "recf9bNCcZ",
+    "latitude": 30.400974,
+    "longitude": 130.977559,
+    "name": "LA-Y1",
+    "location_name_en": "LA-Y1, Tanegashima Space Center, Japan",
+    "country": "🇯🇵日本",
+    "launch_center": "种子岛宇宙中心",
+    "coordinates": "130.977559,30.400974"
+  },
+  {
+    "record_id": "recjSTBF2i",
+    "latitude": 30.400963,
+    "longitude": 130.975576,
+    "name": "LA-Y2",
+    "location_name_en": "LA-Y2, Tanegashima Space Center, Japan",
+    "country": "🇯🇵日本",
+    "launch_center": "种子岛宇宙中心",
+    "coordinates": "130.975576,30.400963"
+  }
+]

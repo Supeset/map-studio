@@ -1,0 +1,18 @@
+[
+  {
+    "record_id": "1",
+    "latitude": 103.48072481551263,
+    "longitude": 38.44514633002117,
+    "name": "ZQ-3 LZ",
+    "decription": "ZhuQue-3 Landing Site",
+    "country": "🇨🇳中国"
+  },
+  {
+    "record_id": "2",
+    "latitude": 101.91859255030832,
+    "longitude": 39.05052326177285,
+    "name": "CZ-12A LZ",
+    "decription": "Long March 12A Landing Site",
+    "country": "🇨🇳中国"
+  }
+]
