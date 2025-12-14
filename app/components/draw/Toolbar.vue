@@ -1,0 +1,49 @@
+<script setup lang="ts">
+defineProps<{
+  modelValue: string // currentMode
+}>()
+
+defineEmits<{
+  (e: 'update:modelValue', mode: string): void
+}>()
+</script>
+
+<template>
+  <div class="flex flex-col gap-2 items-start left-4 top-20 absolute z-20">
+    <div class="p-2 rounded-lg bg-white/90 flex flex-col gap-2 shadow-xl backdrop-blur-sm dark:bg-gray-800/90">
+      <button
+        class="group p-2 rounded transition relative hover:bg-teal-50 dark:hover:bg-gray-700"
+        :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'simple_select' }"
+        title="选择工具"
+        @click="$emit('update:modelValue', 'simple_select')"
+      >
+        <div class="i-carbon-cursor-1 text-xl" />
+      </button>
+      <div class="mx-1 bg-gray-200 h-px dark:bg-gray-700" />
+      <button
+        class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
+        :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'draw_point' }"
+        title="绘制点 (圆)"
+        @click="$emit('update:modelValue', 'draw_point')"
+      >
+        <div class="i-gis-point text-xl" />
+      </button>
+      <button
+        class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
+        :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'draw_line_string' }"
+        title="绘制线"
+        @click="$emit('update:modelValue', 'draw_line_string')"
+      >
+        <div class="i-gis-polyline-pt text-xl" />
+      </button>
+      <button
+        class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
+        :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'draw_polygon' }"
+        title="绘制面 (矩形/多边形)"
+        @click="$emit('update:modelValue', 'draw_polygon')"
+      >
+        <div class="i-gis-polygon-pt text-xl" />
+      </button>
+    </div>
+  </div>
+</template>
