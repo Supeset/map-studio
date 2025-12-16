@@ -147,7 +147,7 @@ onUnmounted(() => {
     <TheToolbox />
 
     <!-- 右下角功能按钮组 -->
-    <div class="flex flex-col gap-3 pointer-events-none items-end bottom-8 right-4 absolute z-20">
+    <div class="flex flex-col gap-3 pointer-events-none items-end bottom-8 right-4 absolute z-40">
       <!-- 内部按钮启用 pointer-events -->
       <div class="flex flex-col gap-3 pointer-events-auto">
         <!-- 定位按钮 -->

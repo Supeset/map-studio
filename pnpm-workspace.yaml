@@ -14,7 +14,7 @@ catalogs:
     nuxt: ^4.2.2
     unocss: ^66.5.10
     unplugin: ^2.3.11
-    vite: ^7.2.7
+    vite: ^7.3.0
   dev:
     '@antfu/eslint-config': ^6.7.1
     astronomy-bundle: ^7.7.7
