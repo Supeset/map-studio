@@ -59,7 +59,15 @@ export default defineNuxtConfig({
       },
     },
   },
-
+  vite: {
+    optimizeDeps: {
+      include: [
+        'dayjs', // CJS
+        'gcoord',
+        'mapbox-gl', // CJS
+      ],
+    },
+  },
   eslint: {
     config: {
       standalone: false,
