@@ -7,24 +7,9 @@ interface ToolLink {
 
 export const internalTools: ToolLink[] = [
   {
-    name: '天文工具',
-    to: '/astro',
-    icon: 'i-carbon-sunrise',
-  },
-  {
     name: '坐标转换',
     to: '/coords',
     icon: 'i-carbon-location',
-  },
-  {
-    name: '火箭发射点',
-    to: '/rocket',
-    icon: 'i-carbon-rocket',
-  },
-  {
-    name: '绘图工坊',
-    to: '/draw',
-    icon: 'i-carbon-draw',
   },
 ]
 

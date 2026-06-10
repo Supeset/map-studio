@@ -1,10 +1,12 @@
 <script setup lang="ts">
 defineProps<{
-  modelValue: string // currentMode
+  modelValue: string
+  isAstroActive: boolean
 }>()
 
 defineEmits<{
-  (e: 'update:modelValue', mode: string): void
+  (e: 'update:model-value', mode: string): void
+  (e: 'toggle-astro'): void
 }>()
 </script>
 
@@ -15,7 +17,7 @@ defineEmits<{
         class="group p-2 rounded transition relative hover:bg-teal-50 dark:hover:bg-gray-700"
         :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'simple_select' }"
         title="选择工具"
-        @click="$emit('update:modelValue', 'simple_select')"
+        @click="$emit('update:model-value', 'simple_select')"
       >
         <div class="i-carbon-cursor-1 text-xl" />
       </button>
@@ -24,7 +26,7 @@ defineEmits<{
         class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
         :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'draw_point' }"
         title="绘制点 (圆)"
-        @click="$emit('update:modelValue', 'draw_point')"
+        @click="$emit('update:model-value', 'draw_point')"
       >
         <div class="i-gis-point text-xl" />
       </button>
@@ -32,7 +34,7 @@ defineEmits<{
         class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
         :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'draw_line_string' }"
         title="绘制线"
-        @click="$emit('update:modelValue', 'draw_line_string')"
+        @click="$emit('update:model-value', 'draw_line_string')"
       >
         <div class="i-gis-polyline-pt text-xl" />
       </button>
@@ -40,9 +42,18 @@ defineEmits<{
         class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
         :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': modelValue === 'draw_polygon' }"
         title="绘制面 (矩形/多边形)"
-        @click="$emit('update:modelValue', 'draw_polygon')"
+        @click="$emit('update:model-value', 'draw_polygon')"
       >
         <div class="i-gis-polygon-pt text-xl" />
+      </button>
+      <div class="mx-1 bg-gray-200 h-px dark:bg-gray-700" />
+      <button
+        class="p-2 rounded transition hover:bg-orange-50 dark:hover:bg-gray-700"
+        :class="{ 'text-orange-500 bg-orange-50 dark:bg-gray-700': isAstroActive }"
+        title="天文工具"
+        @click="$emit('toggle-astro')"
+      >
+        <div class="i-carbon-sunrise text-xl" />
       </button>
     </div>
   </div>
