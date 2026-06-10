@@ -4,6 +4,7 @@ minimumReleaseAgeExclude:
   - '@nuxt/schema@4.4.8'
   - '@nuxt/vite-builder@4.4.8'
   - nuxt@4.4.8
+  - '@nuxtjs/color-mode@4.0.1'
 
 shellEmulator: true
 
@@ -25,7 +26,7 @@ catalogs:
     '@nuxt/devtools': ^3.2.4
     '@nuxt/eslint': ^1.15.2
     '@nuxt/kit': ^4.4.8
-    '@nuxtjs/color-mode': ^4.0.0
+    '@nuxtjs/color-mode': ^4.0.1
     '@pinia/nuxt': ^0.11.3
     '@unocss/eslint-config': ^66.7.0
     '@unocss/nuxt': ^66.7.0

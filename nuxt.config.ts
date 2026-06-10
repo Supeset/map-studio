@@ -62,6 +62,10 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: [
+        '@mapbox/mapbox-gl-draw',
+        'astronomy-bundle/earth', // CJS
+        'astronomy-bundle/sun', // CJS
+        'astronomy-bundle/time', // CJS
         'dayjs', // CJS
         'gcoord',
         'mapbox-gl', // CJS

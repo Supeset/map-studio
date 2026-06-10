@@ -1,6 +1,6 @@
 # Map Studio 万物分享
 
-Map Studio 是一个基于 **Nuxt 3** 构建的现代 Web 地图工具箱。它集成了多种实用的地理信息工具，旨在提供流畅、美观且高效的地图交互体验。
+Map Studio 是一个基于 **Nuxt** 构建的现代 Web 地图工具箱。它集成了多种实用的地理信息工具，旨在提供流畅、美观且高效的地图交互体验。
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/39f7dd8b-2720-4080-849a-79f3644f47ba/deploy-status)](https://app.netlify.com/projects/map-studio/deploys)
 
@@ -46,7 +46,7 @@ Map Studio 是一个基于 **Nuxt 3** 构建的现代 Web 地图工具箱。它�
 
 ## 🛠 技术栈
 
-- **核心框架**: [Nuxt 3](https://nuxt.com/) (Vue 3 + TypeScript)
+- **核心框架**: [Nuxt](https://nuxt.com/) (Vue + TypeScript)
 - **构建工具**: [Vite](https://vitejs.dev/)
 - **样式方案**: [UnoCSS](https://unocss.dev/) (Atomic CSS)
 - **地图引擎**: [Mapbox GL JS](https://www.mapbox.com/mapbox-gl-js)
