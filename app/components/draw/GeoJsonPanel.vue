@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FeatureCollection } from 'geojson'
 import ThePanel from '~/components/ThePanel.vue'
+import { type ImportFormat, IMPORT_FORMATS, convertToGeoJSON } from '~/utils/geojsonConverter'
 
 const props = defineProps<{
   features: FeatureCollection
@@ -9,11 +10,16 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'import', text: string): { success: boolean, message: string }
+  (e: 'import', text: string): { success: boolean, message: string } | undefined
 }>()
 
 const { copy: copyToClipboard, copied: isCopied } = useClipboard()
 const { copy: copyShareLink, copied: isShareLinkCopied } = useClipboard()
+
+const importFormat = ref<ImportFormat>('geojson')
+const currentPlaceholder = computed(() =>
+  IMPORT_FORMATS.find(f => f.value === importFormat.value)?.placeholder ?? '粘贴文本...',
+)
 
 const displayGeoJson = computed(() => {
   if (props.selectedFeatureId && props.selectedFeatureJson) {
@@ -40,7 +46,15 @@ const importMessage = ref<{ text: string, success: boolean } | null>(null)
 function handleImport() {
   const text = importText.value.trim()
   if (!text) return
-  const result = emit('import', text)
+
+  const converted = convertToGeoJSON(text, importFormat.value)
+  if (!converted) {
+    importMessage.value = { text: '无法解析文本中的坐标', success: false }
+    setTimeout(() => importMessage.value = null, 3000)
+    return
+  }
+
+  const result = emit('import', converted)
   if (result) {
     importMessage.value = { text: result.message, success: result.success }
     if (result.success)
@@ -93,10 +107,23 @@ function handlePaste() {
 
     <!-- 导入区域 -->
     <div v-if="isImportOpen" class="p-3 border-b border-gray-100 dark:border-gray-700">
+      <div class="flex gap-2 mb-2">
+        <button
+          v-for="fmt in IMPORT_FORMATS"
+          :key="fmt.value"
+          class="text-xs px-2.5 py-1 rounded-md transition"
+          :class="importFormat === fmt.value
+            ? 'text-teal-700 bg-teal-50 dark:text-teal-400 dark:bg-teal-900/30'
+            : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'"
+          @click="importFormat = fmt.value"
+        >
+          {{ fmt.label }}
+        </button>
+      </div>
       <textarea
         v-model="importText"
         class="w-full h-32 text-xs text-gray-700 p-2 border border-gray-200 rounded-lg font-mono resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600"
-        placeholder="粘贴 GeoJSON 文本..."
+        :placeholder="currentPlaceholder"
         @keydown.ctrl.enter="handleImport"
       />
       <div class="flex gap-2 mt-2 items-center">
