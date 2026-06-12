@@ -212,6 +212,74 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
     return null
   })
 
+  function importGeoJson(text: string): { success: boolean, message: string } {
+    if (!drawInstance.value) {
+      return { success: false, message: '绘图工具未初始化' }
+    }
+
+    let parsed: any
+    try {
+      parsed = JSON.parse(text)
+    }
+    catch {
+      return { success: false, message: 'JSON 格式无效' }
+    }
+
+    let collection: FeatureCollection | null = null
+
+    if (parsed.type === 'FeatureCollection') {
+      collection = parsed
+    }
+    else if (parsed.type === 'Feature') {
+      collection = { type: 'FeatureCollection', features: [parsed] }
+    }
+    else if (parsed.coordinates || parsed.geometries) {
+      collection = {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', geometry: parsed, properties: {} } as Feature],
+      }
+    }
+    else {
+      return { success: false, message: '无法识别的 GeoJSON 格式' }
+    }
+
+    if (!collection.features || collection.features.length === 0) {
+      return { success: false, message: '没有有效的要素' }
+    }
+
+    const existing = drawInstance.value.getAll()
+    const merged: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: [...existing.features, ...collection.features],
+    }
+    drawInstance.value.set(merged)
+    updateStorage()
+
+    if (mapInstance.value) {
+      const bounds = new mapboxgl.LngLatBounds()
+      const extendBounds = (coords: any) => {
+        if (Array.isArray(coords)) {
+          if (coords.length >= 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+            bounds.extend(coords as [number, number])
+          }
+          else {
+            coords.forEach(c => extendBounds(c))
+          }
+        }
+      }
+      collection.features.forEach((f: Feature) => {
+        if (f.geometry && 'coordinates' in f.geometry) {
+          extendBounds(f.geometry.coordinates)
+        }
+      })
+      if (!bounds.isEmpty()) {
+        mapInstance.value.fitBounds(bounds, { padding: 100, maxZoom: 15 })
+      }
+    }
+
+    return { success: true, message: `成功导入 ${collection.features.length} 个要素` }
+  }
+
   watch(isMapLoaded, (loaded) => {
     if (loaded) {
       initDraw()
@@ -245,5 +313,6 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
     updateFeatureProperty,
     removeProperty,
     addDefaultStyles,
+    importGeoJson,
   }
 }

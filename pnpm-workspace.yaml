@@ -49,6 +49,7 @@ catalogs:
     vite: ^8.0.16
   dev:
     '@antfu/eslint-config': ^9.0.0
+    '@types/geojson': ^7946.0.16
     '@types/mapbox__mapbox-gl-draw': ^1.4.9
     astronomy-bundle: ^7.7.7
     dayjs: ^1.11.21

@@ -39,7 +39,12 @@ const {
   updateFeatureProperty,
   removeProperty,
   addDefaultStyles,
+  importGeoJson,
 } = useDrawTool(mapInstance, isMapLoaded)
+
+function handleImportGeoJson(text: string) {
+  return importGeoJson(text)
+}
 
 function handleToggleAstro() {
   if (isAstroActive.value) {
@@ -133,6 +138,7 @@ function handleAstroTogglePin() {
           :features="savedFeatures"
           :selected-feature-id="selectedFeatureId"
           :selected-feature-json="selectedFeatureJson"
+          @import="handleImportGeoJson"
         />
       </div>
     </div>

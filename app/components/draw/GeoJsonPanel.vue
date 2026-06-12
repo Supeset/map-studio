@@ -8,6 +8,10 @@ const props = defineProps<{
   selectedFeatureJson: string | null
 }>()
 
+const emit = defineEmits<{
+  (e: 'import', text: string): { success: boolean, message: string }
+}>()
+
 const { copy: copyToClipboard, copied: isCopied } = useClipboard()
 const { copy: copyShareLink, copied: isShareLinkCopied } = useClipboard()
 
@@ -28,6 +32,28 @@ function handleCopyShareLink() {
   const url = `${window.location.origin}${window.location.pathname}?data=${dataParam}`
   copyShareLink(url)
 }
+
+const importText = ref('')
+const isImportOpen = ref(false)
+const importMessage = ref<{ text: string, success: boolean } | null>(null)
+
+function handleImport() {
+  const text = importText.value.trim()
+  if (!text) return
+  const result = emit('import', text)
+  if (result) {
+    importMessage.value = { text: result.message, success: result.success }
+    if (result.success)
+      importText.value = ''
+    setTimeout(() => importMessage.value = null, 3000)
+  }
+}
+
+function handlePaste() {
+  navigator.clipboard.readText().then((text) => {
+    importText.value = text
+  }).catch(() => {})
+}
 </script>
 
 <template>
@@ -44,6 +70,13 @@ function handleCopyShareLink() {
     <template #actions>
       <button
         class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+        title="粘贴导入 GeoJSON"
+        @click="isImportOpen = !isImportOpen"
+      >
+        <div class="i-carbon-document-import text-sm" />
+      </button>
+      <button
+        class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
         title="复制分享链接"
         @click="handleCopyShareLink"
       >
@@ -57,6 +90,39 @@ function handleCopyShareLink() {
         <div :class="isCopied ? 'i-carbon-checkmark text-green-500' : 'i-carbon-copy'" />
       </button>
     </template>
+
+    <!-- 导入区域 -->
+    <div v-if="isImportOpen" class="p-3 border-b border-gray-100 dark:border-gray-700">
+      <textarea
+        v-model="importText"
+        class="w-full h-32 text-xs text-gray-700 p-2 border border-gray-200 rounded-lg font-mono resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600"
+        placeholder="粘贴 GeoJSON 文本..."
+        @keydown.ctrl.enter="handleImport"
+      />
+      <div class="flex gap-2 mt-2 items-center">
+        <button
+          class="text-xs text-white px-3 py-1.5 rounded-md bg-teal-600 hover:bg-teal-700 transition disabled:opacity-40"
+          :disabled="!importText.trim()"
+          @click="handleImport"
+        >
+          导入
+        </button>
+        <button
+          class="text-xs text-gray-500 px-3 py-1.5 rounded-md border border-gray-200 hover:bg-gray-100 transition dark:border-gray-600 dark:hover:bg-gray-700"
+          @click="handlePaste"
+        >
+          从剪贴板粘贴
+        </button>
+        <span class="text-[10px] text-gray-400 ml-auto">Ctrl+Enter 导入</span>
+      </div>
+      <div
+        v-if="importMessage"
+        class="text-xs mt-2 px-2 py-1 rounded"
+        :class="importMessage.success ? 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20' : 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20'"
+      >
+        {{ importMessage.text }}
+      </div>
+    </div>
 
     <!-- Default Slot: Content -->
     <div class="p-3">

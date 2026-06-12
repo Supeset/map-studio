@@ -24,6 +24,7 @@
     "@nuxt/eslint": "catalog:build",
     "@nuxtjs/color-mode": "catalog:build",
     "@pinia/nuxt": "catalog:build",
+    "@types/geojson": "catalog:dev",
     "@types/mapbox__mapbox-gl-draw": "catalog:dev",
     "@unocss/eslint-config": "catalog:build",
     "@unocss/nuxt": "catalog:build",
