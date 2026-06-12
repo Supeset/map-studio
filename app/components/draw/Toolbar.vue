@@ -2,11 +2,13 @@
 defineProps<{
   modelValue: string
   isAstroActive: boolean
+  isRocketActive: boolean
 }>()
 
 defineEmits<{
   (e: 'update:model-value', mode: string): void
   (e: 'toggle-astro'): void
+  (e: 'toggle-rocket'): void
 }>()
 </script>
 
@@ -47,6 +49,14 @@ defineEmits<{
         <div class="i-gis-polygon-pt text-xl" />
       </button>
       <div class="mx-1 bg-gray-200 h-px dark:bg-gray-700" />
+      <button
+        class="p-2 rounded transition hover:bg-teal-50 dark:hover:bg-gray-700"
+        :class="{ 'text-teal-600 bg-teal-50 dark:bg-gray-700': isRocketActive }"
+        title="火箭发射场/回收场"
+        @click="$emit('toggle-rocket')"
+      >
+        <div class="i-carbon-rocket text-xl" />
+      </button>
       <button
         class="p-2 rounded transition hover:bg-orange-50 dark:hover:bg-gray-700"
         :class="{ 'text-orange-500 bg-orange-50 dark:bg-gray-700': isAstroActive }"

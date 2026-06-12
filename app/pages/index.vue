@@ -25,7 +25,7 @@ const {
   clearResult: clearAstroResult,
 } = useAstroTool(mapInstance, isMapLoaded)
 
-const { padsData, landingData, handleSelectPad, handleSelectLanding } = useRocketTool(mapInstance, isMapLoaded)
+const { visible: isRocketVisible, padsData, landingData, handleSelectPad, handleSelectLanding, toggleVisibility: toggleRocket } = useRocketTool(mapInstance, isMapLoaded)
 
 const {
   savedFeatures,
@@ -96,22 +96,26 @@ function handleAstroTogglePin() {
     <DrawToolbar
       :model-value="currentMode"
       :is-astro-active="isAstroActive"
+      :is-rocket-active="isRocketVisible"
       @update:model-value="handleDrawModeChange"
       @toggle-astro="handleToggleAstro"
+      @toggle-rocket="toggleRocket"
     />
 
     <!-- 右侧面板容器 -->
     <div class="flex flex-col gap-3 w-80 pointer-events-none bottom-4 right-4 top-4 absolute z-20">
       <div class="pr-1 flex flex-col gap-3 h-full pointer-events-auto overflow-y-auto">
         <!-- 火箭面板 -->
-        <RocketListPanel
-          :pads="padsData"
-          @select="handleSelectPad"
-        />
-        <LandingListPanel
-          :sites="landingData"
-          @select="handleSelectLanding"
-        />
+        <template v-if="isRocketVisible">
+          <RocketListPanel
+            :pads="padsData"
+            @select="handleSelectPad"
+          />
+          <LandingListPanel
+            :sites="landingData"
+            @select="handleSelectLanding"
+          />
+        </template>
 
         <!-- 绘图属性面板 -->
         <DrawPropertiesPanel

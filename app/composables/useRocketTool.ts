@@ -17,6 +17,8 @@ export function useRocketTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Re
   const LANDING_POINT_ID = 'landing-point'
   const LANDING_LABEL_ID = 'landing-label'
 
+  const visible = ref(false)
+
   const { data: rawPads } = useFetch<EnrichedPad[]>('/rocket/enriched_locations.json')
   const padsData = computed(() => rawPads.value || [])
 
@@ -316,7 +318,8 @@ export function useRocketTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Re
   }
 
   function handleStyleLoad() {
-    initLayers()
+    if (visible.value)
+      initLayers()
   }
 
   function removeLayers() {
@@ -345,9 +348,20 @@ export function useRocketTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Re
       map.removeSource(LANDING_SOURCE_ID)
   }
 
+  function toggleVisibility() {
+    visible.value = !visible.value
+    if (visible.value) {
+      initLayers()
+    }
+    else {
+      removeLayers()
+    }
+  }
+
   watch(isMapLoaded, (loaded) => {
     if (loaded && mapInstance.value) {
-      initLayers()
+      if (visible.value)
+        initLayers()
       mapInstance.value.on('style.load', handleStyleLoad)
     }
   }, { immediate: true })
@@ -360,9 +374,11 @@ export function useRocketTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Re
   })
 
   return {
+    visible,
     padsData,
     landingData,
     handleSelectPad,
     handleSelectLanding,
+    toggleVisibility,
   }
 }
