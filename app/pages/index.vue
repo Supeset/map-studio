@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AstroInfoPanel from '~/components/astro/InfoPanel.vue'
+import DrawFeatureListPanel from '~/components/draw/FeatureListPanel.vue'
 import DrawGeoJsonPanel from '~/components/draw/GeoJsonPanel.vue'
 import DrawPropertiesPanel from '~/components/draw/PropertiesPanel.vue'
 import DrawToolbar from '~/components/draw/Toolbar.vue'
@@ -36,6 +37,10 @@ const {
   selectedFeatureJson,
   setDrawMode,
   deleteSelected,
+  deleteFeature,
+  clearAll,
+  selectFeature,
+  focusFeature,
   updateFeatureProperty,
   removeProperty,
   addDefaultStyles,
@@ -121,6 +126,16 @@ function handleAstroTogglePin() {
             @select="handleSelectLanding"
           />
         </template>
+
+        <!-- 图形列表 -->
+        <DrawFeatureListPanel
+          :features="savedFeatures.features"
+          :selected-feature-id="selectedFeatureId"
+          @select="selectFeature"
+          @focus="focusFeature"
+          @delete="deleteFeature"
+          @clear-all="clearAll"
+        />
 
         <!-- 绘图属性面板 -->
         <DrawPropertiesPanel

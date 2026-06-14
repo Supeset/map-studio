@@ -4,6 +4,25 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import mapboxgl from 'mapbox-gl'
 import { DRAW_STORAGE_KEY, drawStyles } from '~/constants/draw'
 
+function extendBoundsWithCoords(bounds: mapboxgl.LngLatBounds, coords: any) {
+  if (Array.isArray(coords)) {
+    if (coords.length >= 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+      bounds.extend(coords as [number, number])
+    }
+    else {
+      coords.forEach(c => extendBoundsWithCoords(bounds, c))
+    }
+  }
+}
+
+function getFeatureBounds(feature: Feature): mapboxgl.LngLatBounds | null {
+  if (!feature.geometry || !('coordinates' in feature.geometry))
+    return null
+  const bounds = new mapboxgl.LngLatBounds()
+  extendBoundsWithCoords(bounds, (feature.geometry as any).coordinates)
+  return bounds.isEmpty() ? null : bounds
+}
+
 export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<boolean>) {
   const drawInstance = shallowRef<MapboxDraw | null>(null)
   const savedFeatures = useLocalStorage(DRAW_STORAGE_KEY, {
@@ -70,26 +89,13 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
           isLoadedFromUrl = true
 
           const bounds = new mapboxgl.LngLatBounds()
-          const extendBounds = (coords: any) => {
-            if (Array.isArray(coords)) {
-              if (coords.length >= 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
-                bounds.extend(coords as [number, number])
-              }
-              else {
-                coords.forEach(c => extendBounds(c))
-              }
-            }
-          }
-
           collection.features.forEach((f: Feature) => {
-            if (f.geometry && 'coordinates' in f.geometry) {
-              extendBounds(f.geometry.coordinates)
-            }
+            if (f.geometry && 'coordinates' in f.geometry)
+              extendBoundsWithCoords(bounds, f.geometry.coordinates)
           })
 
-          if (!bounds.isEmpty()) {
+          if (!bounds.isEmpty())
             mapInstance.value.fitBounds(bounds, { padding: 100, maxZoom: 15 })
-          }
         }
       }
       catch (e) {
@@ -143,6 +149,49 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
     drawInstance.value.delete([selectedFeatureId.value])
     updateStorage()
     selectedFeatureId.value = null
+  }
+
+  function deleteFeature(id: string) {
+    if (!drawInstance.value)
+      return
+    drawInstance.value.delete([id])
+    updateStorage()
+    if (selectedFeatureId.value === id) {
+      selectedFeatureId.value = null
+      selectedFeatureProps.value = {}
+    }
+  }
+
+  function clearAll() {
+    if (!drawInstance.value)
+      return
+    drawInstance.value.deleteAll()
+    updateStorage()
+    selectedFeatureId.value = null
+    selectedFeatureProps.value = {}
+  }
+
+  function selectFeature(id: string) {
+    if (!drawInstance.value)
+      return
+    drawInstance.value.changeMode('simple_select', { featureIds: [id] })
+  }
+
+  function focusFeature(id: string) {
+    if (!mapInstance.value || !drawInstance.value)
+      return
+    const feat = drawInstance.value.get(id) as Feature | undefined
+    if (!feat)
+      return
+    const bounds = getFeatureBounds(feat)
+    if (!bounds)
+      return
+    if (feat.geometry?.type === 'Point') {
+      mapInstance.value.flyTo({ center: bounds.getCenter(), zoom: 15 })
+    }
+    else {
+      mapInstance.value.fitBounds(bounds, { padding: 100, maxZoom: 15 })
+    }
   }
 
   function updateFeatureProperty(key: string, value: any) {
@@ -257,24 +306,12 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
 
     if (mapInstance.value) {
       const bounds = new mapboxgl.LngLatBounds()
-      const extendBounds = (coords: any) => {
-        if (Array.isArray(coords)) {
-          if (coords.length >= 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
-            bounds.extend(coords as [number, number])
-          }
-          else {
-            coords.forEach(c => extendBounds(c))
-          }
-        }
-      }
       collection.features.forEach((f: Feature) => {
-        if (f.geometry && 'coordinates' in f.geometry) {
-          extendBounds(f.geometry.coordinates)
-        }
+        if (f.geometry && 'coordinates' in f.geometry)
+          extendBoundsWithCoords(bounds, f.geometry.coordinates)
       })
-      if (!bounds.isEmpty()) {
+      if (!bounds.isEmpty())
         mapInstance.value.fitBounds(bounds, { padding: 100, maxZoom: 15 })
-      }
     }
 
     return { success: true, message: `成功导入 ${collection.features.length} 个要素` }
@@ -310,6 +347,10 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
     selectedFeatureJson,
     setDrawMode,
     deleteSelected,
+    deleteFeature,
+    clearAll,
+    selectFeature,
+    focusFeature,
     updateFeatureProperty,
     removeProperty,
     addDefaultStyles,
