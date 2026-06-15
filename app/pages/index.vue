@@ -6,6 +6,7 @@ import DrawPropertiesPanel from '~/components/draw/PropertiesPanel.vue'
 import DrawToolbar from '~/components/draw/Toolbar.vue'
 import LandingListPanel from '~/components/rocket/LandingListPanel.vue'
 import RocketListPanel from '~/components/rocket/ListPanel.vue'
+import RocketVisibilityPanel from '~/components/rocket/VisibilityPanel.vue'
 
 defineOptions({
   name: 'IndexPage',
@@ -29,6 +30,7 @@ const {
 const { visible: isRocketVisible, padsData, landingData, handleSelectPad, handleSelectLanding, toggleVisibility: toggleRocket } = useRocketTool(mapInstance, isMapLoaded)
 
 const {
+  drawInstance,
   savedFeatures,
   selectedFeatureId,
   selectedFeatureProps,
@@ -46,6 +48,28 @@ const {
   addDefaultStyles,
   importGeoJson,
 } = useDrawTool(mapInstance, isMapLoaded)
+
+const {
+  step: visibilityStep,
+  selectedPad: visibilitySelectedPad,
+  selectedPolygonIds: visibilitySelectedPolygonIds,
+  result: visibilityResult,
+  errorMessage: visibilityError,
+  maxVisibilityRadiusKm: visibilityMaxVisibilityRadiusKm,
+  setLandingHeight: setVisibilityLandingHeight,
+  enterSelectPadMode,
+  enterSelectPolygonMode,
+  clear: clearVisibility,
+} = useRocketVisibility(mapInstance, isMapLoaded, {
+  drawInstance,
+  setDrawMode,
+  padsData,
+  isActive: isRocketVisible,
+})
+
+function handleUpdateLandingHeight(payload: { id: string, heightKm: number }) {
+  setVisibilityLandingHeight(payload.id, payload.heightKm)
+}
 
 function handleImportGeoJson(text: string) {
   return importGeoJson(text)
@@ -98,6 +122,25 @@ function handleAstroTogglePin() {
       >
         <div class="text-sm text-white/90 tracking-wide font-medium px-6 py-2 border border-white/10 rounded-full bg-black/60 shadow-lg backdrop-blur-md">
           双击地图结束绘制
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 火箭可见性步骤提示 -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform -translate-y-4 opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform -translate-y-4 opacity-0"
+    >
+      <div
+        v-if="visibilityStep === 'select-pad' || visibilityStep === 'select-polygon'"
+        class="flex pointer-events-none left-0 right-0 top-16 justify-center absolute z-40"
+      >
+        <div class="text-sm text-white/90 tracking-wide font-medium px-6 py-2 border border-orange-400/30 rounded-full bg-orange-600/80 shadow-lg backdrop-blur-md">
+          {{ visibilityStep === 'select-pad' ? '请在地图上点击发射场图标' : '请绘制或选择落区面（多边形）' }}
         </div>
       </div>
     </Transition>
@@ -167,6 +210,23 @@ function handleAstroTogglePin() {
       :is-pinned="isAstroPinned"
       @close="handleAstroClose"
       @toggle-pin="handleAstroTogglePin"
+    />
+
+    <!-- 火箭可见区域底部卡片 -->
+    <RocketVisibilityPanel
+      v-if="isRocketVisible"
+      :step="visibilityStep"
+      :selected-pad-name="visibilitySelectedPad?.name ?? null"
+      :selected-polygon-ids="visibilitySelectedPolygonIds"
+      :result="visibilityResult"
+      :error-message="visibilityError"
+      :max-visibility-radius-km="visibilityMaxVisibilityRadiusKm"
+      @start="enterSelectPadMode"
+      @reselect-pad="enterSelectPadMode"
+      @reselect-polygon="enterSelectPolygonMode"
+      @clear="clearVisibility"
+      @update:max-visibility-radius-km="visibilityMaxVisibilityRadiusKm = $event"
+      @update:landing-height="handleUpdateLandingHeight"
     />
   </div>
 </template>

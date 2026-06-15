@@ -292,7 +292,7 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
       return { success: false, message: '无法识别的 GeoJSON 格式' }
     }
 
-    if (!collection.features || collection.features.length === 0) {
+    if (!collection || !collection.features || collection.features.length === 0) {
       return { success: false, message: '没有有效的要素' }
     }
 

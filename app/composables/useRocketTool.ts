@@ -3,20 +3,20 @@ import type { GeoJSONSource, Map } from 'mapbox-gl'
 import type { LandingSite } from '~/components/rocket/LandingListPanel.vue'
 import type { EnrichedPad } from '~/components/rocket/ListPanel.vue'
 import mapboxgl from 'mapbox-gl'
+import {
+  LANDING_CLUSTER_ID,
+  LANDING_COUNT_ID,
+  LANDING_LABEL_ID,
+  LANDING_POINT_ID,
+  LANDING_SOURCE_ID,
+  PADS_CLUSTER_ID,
+  PADS_COUNT_ID,
+  PADS_LABEL_ID,
+  PADS_POINT_ID,
+  PADS_SOURCE_ID,
+} from '~/constants/rocket'
 
 export function useRocketTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<boolean>) {
-  const PADS_SOURCE_ID = 'pads-source'
-  const PADS_CLUSTER_ID = 'pads-clusters'
-  const PADS_COUNT_ID = 'pads-cluster-count'
-  const PADS_POINT_ID = 'pads-point'
-  const PADS_LABEL_ID = 'pads-label'
-
-  const LANDING_SOURCE_ID = 'landing-source'
-  const LANDING_CLUSTER_ID = 'landing-clusters'
-  const LANDING_COUNT_ID = 'landing-cluster-count'
-  const LANDING_POINT_ID = 'landing-point'
-  const LANDING_LABEL_ID = 'landing-label'
-
   const visible = ref(false)
 
   const { data: rawPads } = useFetch<EnrichedPad[]>('/rocket/enriched_locations.json')
