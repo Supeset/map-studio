@@ -11,6 +11,11 @@ export default defineNuxtConfig({
 
   ssr: false,
 
+  imports: {
+    // Nuxt 默认只扫描 composables/ 顶层,显式纳入子目录
+    dirs: ['~/composables/rocket'],
+  },
+
   devtools: {
     enabled: false,
   },
