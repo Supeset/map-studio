@@ -156,7 +156,7 @@ function handleAstroTogglePin() {
     />
 
     <!-- 右侧面板容器 -->
-    <div class="flex flex-col gap-3 w-80 pointer-events-none bottom-4 right-4 top-4 absolute z-20">
+    <div class="flex flex-col gap-3 w-80 pointer-events-none bottom-4 right-4 top-16 absolute z-20">
       <div class="pr-1 flex flex-col gap-3 h-full pointer-events-auto overflow-y-auto">
         <!-- 火箭面板 -->
         <template v-if="isRocketVisible">

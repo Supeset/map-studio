@@ -61,7 +61,7 @@ catalogs:
     '@mapbox/mapbox-gl-draw': ^1.5.1
     '@vueuse/core': ^14.3.0
     gcoord: ^1.0.7
-    mapbox-gl: ^3.24.1
+    mapbox-gl: ^3.25.0
     pinia: ^3.0.4
     vue: ^3.5.38
   icons:
