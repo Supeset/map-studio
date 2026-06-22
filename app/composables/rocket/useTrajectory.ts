@@ -3,6 +3,7 @@ import type { RocketPreset, TrajectoryProfile } from '~/constants/rocket-presets
 import type { LngLat } from '~/utils/geometry'
 import {
   EARTH_EFFECTIVE_RADIUS_KM,
+  EARTH_RADIUS_KM,
   ROCKET_FRAME_COUNT,
   ROCKET_FRAME_COUNT_LONG,
   ROCKET_LOG_K,
@@ -54,6 +55,23 @@ export function visibilityRadiusGeometric(h: number): number {
   if (h <= 0)
     return 0
   return Math.sqrt(2 * EARTH_EFFECTIVE_RADIUS_KM * h)
+}
+
+/**
+ * 给定地面观测者最小仰角 e 时的地面可见半径
+ * 球面几何关系:cos(ρ + e) = R / (R + h) · cos(e),d = R_eff · ρ
+ * - e = 0:退化为几何上限,与 visibilityRadiusGeometric 一致(小角度近似)
+ * - e 增大:d 减小(要求更高的仰角才能观测,覆盖范围更小)
+ */
+export function visibilityRadiusAtElevation(h: number, elevationDeg: number): number {
+  if (h <= 0)
+    return 0
+  const e = (elevationDeg * Math.PI) / 180
+  const cosRhoPlusE = (EARTH_RADIUS_KM / (EARTH_RADIUS_KM + h)) * Math.cos(e)
+  const rho = Math.acos(Math.max(-1, Math.min(1, cosRhoPlusE))) - e
+  if (rho <= 0)
+    return 0
+  return EARTH_EFFECTIVE_RADIUS_KM * rho
 }
 
 /**
@@ -120,7 +138,7 @@ export function clarityScore(altitudeKm: number, maxAltitudeKm: number): number 
 }
 
 /** Andrew monotone chain 凸包(经纬度小范围近似平面) */
-function convexHull(points: [number, number][]): [number, number][] {
+export function convexHull(points: [number, number][]): [number, number][] {
   const seen = new Map<string, [number, number]>()
   for (const p of points)
     seen.set(`${p[0].toFixed(4)},${p[1].toFixed(4)}`, p)
@@ -152,26 +170,29 @@ function convexHull(points: [number, number][]): [number, number][] {
   return [...lower, ...upper]
 }
 
-/** 由采样帧构造可见包络多边形(所有帧可见圆的凸包) */
-function buildEnvelopePolygon(frames: TrajectoryFrame[]): Polygon {
+/**
+ * 由采样帧 + 最小仰角构造可见包络多边形(capsule 近似)
+ * 所有帧可见圆的凸包,外形类似双曲线的闭合胶囊
+ */
+export function buildVisibilityEnvelope(
+  frames: { pos: [number, number], altitudeKm: number }[],
+  elevationDeg: number,
+): Polygon | null {
   const pts: [number, number][] = []
   for (const f of frames) {
-    if (f.visibilityRadiusKm <= 0)
+    const r = visibilityRadiusAtElevation(f.altitudeKm, elevationDeg)
+    if (r <= 0)
       continue
-    const ring = generateCirclePolygon({ lng: f.pos[0], lat: f.pos[1] }, f.visibilityRadiusKm, 24)[0]
+    const ring = generateCirclePolygon({ lng: f.pos[0], lat: f.pos[1] }, r, 24)[0]
     if (ring)
       pts.push(...ring.map(c => c as [number, number]))
   }
-
+  if (pts.length < 3)
+    return null
   const hull = convexHull(pts)
-  if (hull.length < 3) {
-    // 退化:返回一个微小三角形占位
-    const p = frames[0]?.pos ?? [0, 0]
-    return { type: 'Polygon', coordinates: [[p, p, p, p]] }
-  }
-
-  const ring = [...hull, hull[0]!]
-  return { type: 'Polygon', coordinates: [ring] }
+  if (hull.length < 3)
+    return null
+  return { type: 'Polygon', coordinates: [[...hull, hull[0]!]] }
 }
 
 /**
@@ -209,7 +230,7 @@ export function solveTrajectory(
       apogeeIndex = i
   }
 
-  const envelope = buildEnvelopePolygon(frames)
+  const envelope = buildVisibilityEnvelope(frames, 0) ?? { type: 'Polygon', coordinates: [[[0, 0], [0, 0], [0, 0], [0, 0]]] }
 
   return {
     preset,

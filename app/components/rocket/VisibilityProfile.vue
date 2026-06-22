@@ -15,7 +15,7 @@ const MID_Y = (SVG_TOP + SVG_BOTTOM) / 2
 
 const totalT = computed(() => props.mission.totalTimeMin)
 const ascentT = computed(() => props.mission.ascentTimeMin)
-const leoH = computed(() => props.mission.leoAltitudeKm)
+const leoH = computed(() => Math.max(props.mission.orbit.apogeeKm, 1))
 
 function xOf(t: number): number {
   return SVG_LEFT + (t / (totalT.value || 1)) * (SVG_RIGHT - SVG_LEFT)

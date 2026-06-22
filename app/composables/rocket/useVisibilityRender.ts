@@ -2,13 +2,14 @@ import type { Feature, FeatureCollection } from 'geojson'
 import type { GeoJSONSource, Map } from 'mapbox-gl'
 import type { MissionFrame, MissionSolution } from '~/composables/rocket/useMission'
 import mapboxgl from 'mapbox-gl'
-import { effectiveVisibilityRadius } from '~/composables/rocket/useTrajectory'
+import { buildVisibilityEnvelope } from '~/composables/rocket/useTrajectory'
 import {
   ROCKET_ASCENT_LAYER,
   ROCKET_BOOSTER_MARKER_LAYER,
   ROCKET_DEBRIS_MARKER_LAYER,
   ROCKET_DEBRIS_PATH_LAYER,
-  ROCKET_HEATMAP_LAYER,
+  ROCKET_ENVELOPE_15_LAYER,
+  ROCKET_ENVELOPE_45_LAYER,
   ROCKET_MARKERS_LAYER,
   ROCKET_ORBIT_LAYER,
   ROCKET_VIS_BOOSTER_FILL_LAYER,
@@ -24,10 +25,11 @@ const EMPTY_FC: FeatureCollection = { type: 'FeatureCollection', features: [] }
 
 /** 图层添加顺序:底 → 顶 */
 const ALL_LAYERS = [
+  ROCKET_ENVELOPE_15_LAYER,
+  ROCKET_ENVELOPE_45_LAYER,
   ROCKET_ASCENT_LAYER,
   ROCKET_ORBIT_LAYER,
   ROCKET_DEBRIS_PATH_LAYER,
-  ROCKET_HEATMAP_LAYER,
   ROCKET_VIS_BOOSTER_FILL_LAYER,
   ROCKET_VIS_DEBRIS_FILL_LAYER,
   ROCKET_VIS_BOOSTER_OUTLINE_LAYER,
@@ -81,29 +83,24 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
         paint: { 'line-color': '#a855f7', 'line-width': 1, 'line-dasharray': [2, 2], 'line-opacity': 0.5 },
       })
     }
-    if (!map.getLayer(ROCKET_HEATMAP_LAYER)) {
+    if (!map.getLayer(ROCKET_ENVELOPE_15_LAYER)) {
       map.addLayer({
-        id: ROCKET_HEATMAP_LAYER,
-        type: 'fill',
+        id: ROCKET_ENVELOPE_15_LAYER,
+        type: 'line',
         source: ROCKET_VIS_STATIC_SOURCE,
-        filter: ['==', ['get', 'kind'], 'heatmap'],
-        paint: {
-          'fill-color': [
-            'interpolate',
-            ['linear'],
-            ['get', 'score'],
-            0,
-            'rgba(59, 130, 246, 0)',
-            0.25,
-            'rgba(56, 189, 248, 0.14)',
-            0.5,
-            'rgba(250, 204, 21, 0.22)',
-            0.75,
-            'rgba(249, 115, 22, 0.3)',
-            1,
-            'rgba(239, 68, 68, 0.4)',
-          ],
-        },
+        filter: ['==', ['get', 'kind'], 'envelope-15'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#06b6d4', 'line-width': 1.4, 'line-opacity': 0.7, 'line-dasharray': [4, 3] },
+      })
+    }
+    if (!map.getLayer(ROCKET_ENVELOPE_45_LAYER)) {
+      map.addLayer({
+        id: ROCKET_ENVELOPE_45_LAYER,
+        type: 'line',
+        source: ROCKET_VIS_STATIC_SOURCE,
+        filter: ['==', ['get', 'kind'], 'envelope-45'],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#f97316', 'line-width': 1.4, 'line-opacity': 0.7, 'line-dasharray': [4, 3] },
       })
     }
     if (!map.getLayer(ROCKET_VIS_BOOSTER_FILL_LAYER)) {
@@ -147,7 +144,7 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
         id: ROCKET_MARKERS_LAYER,
         type: 'circle',
         source: ROCKET_VIS_STATIC_SOURCE,
-        filter: ['==', ['$type'], 'Point'],
+        filter: ['==', ['geometry-type'], 'Point'],
         paint: {
           'circle-radius': 7,
           'circle-color': [
@@ -186,7 +183,7 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
     }
   }
 
-  function renderMissionStatic(sol: MissionSolution, atmosphericVisibilityKm: number) {
+  function renderMissionStatic(sol: MissionSolution, _atmosphericVisibilityKm: number) {
     const map = mapInstance.value
     if (!map)
       return
@@ -214,14 +211,21 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
       properties: { kind: 'orbit' },
     } as Feature)
 
-    for (const f of sol.ascent) {
-      const r = effectiveVisibilityRadius(f.altitudeKm, atmosphericVisibilityKm)
-      if (r <= 0)
-        continue
+    // 可见包络(15° / 45° 仰角):上升段所有可见圆的凸包,描边呈现
+    const envelope15 = buildVisibilityEnvelope(sol.ascent, 15)
+    if (envelope15) {
       features.push({
         type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: generateCirclePolygon({ lng: f.pos[0], lat: f.pos[1] }, r, 32) },
-        properties: { kind: 'heatmap', score: Math.min(1, f.altitudeKm / sol.leoAltitudeKm) },
+        geometry: envelope15,
+        properties: { kind: 'envelope-15' },
+      } as Feature)
+    }
+    const envelope45 = buildVisibilityEnvelope(sol.ascent, 45)
+    if (envelope45) {
+      features.push({
+        type: 'Feature',
+        geometry: envelope45,
+        properties: { kind: 'envelope-45' },
       } as Feature)
     }
 

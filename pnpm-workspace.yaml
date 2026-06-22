@@ -29,6 +29,7 @@ packages: []
 
 allowBuilds:
   '@parcel/watcher': true
+  '@vaadin/vaadin-usage-statistics': set this to true or false
   esbuild: true
   unrs-resolver: true
 

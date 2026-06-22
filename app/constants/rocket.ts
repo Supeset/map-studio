@@ -12,12 +12,15 @@ export const LANDING_COUNT_ID = 'landing-cluster-count'
 export const LANDING_POINT_ID = 'landing-point'
 export const LANDING_LABEL_ID = 'landing-label'
 
-// ============ 任务剖面 · 静态层(上升 / 残骸弹道 / 轨道一圈 / 热力 / 端点标记) ============
+// ============ 任务剖面 · 静态层(上升 / 残骸弹道 / 轨道一圈 / 可见包络 / 端点标记) ============
 export const ROCKET_VIS_STATIC_SOURCE = 'rocket-vis-static-source'
 export const ROCKET_ASCENT_LAYER = 'rocket-ascent-trajectory'
 export const ROCKET_ORBIT_LAYER = 'rocket-orbit-track'
 export const ROCKET_DEBRIS_PATH_LAYER = 'rocket-debris-path'
-export const ROCKET_HEATMAP_LAYER = 'rocket-heatmap'
+/** 15° 仰角可见包络(范围较大,蓝色) */
+export const ROCKET_ENVELOPE_15_LAYER = 'rocket-envelope-15'
+/** 45° 仰角可见包络(范围较小,橙色) */
+export const ROCKET_ENVELOPE_45_LAYER = 'rocket-envelope-45'
 export const ROCKET_MARKERS_LAYER = 'rocket-markers'
 
 // ============ 任务剖面 · 动态层(当前主体 + 残骸可见圆 / 位置) ============

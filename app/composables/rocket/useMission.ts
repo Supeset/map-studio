@@ -1,5 +1,6 @@
 import type { OrbitSolution } from '~/composables/rocket/useOrbit'
 import type { AscentFrame } from '~/composables/rocket/useTrajectory'
+import type { OrbitPreset } from '~/constants/orbit-presets'
 import type { LngLat } from '~/utils/geometry'
 import { inclinationFromBearing, solveOrbitTrack } from '~/composables/rocket/useOrbit'
 import { ascentAltitude, effectiveVisibilityRadius, solveAscent } from '~/composables/rocket/useTrajectory'
@@ -54,8 +55,8 @@ export interface MissionSolution {
   bearing: number
   /** 轨道倾角 ° */
   inclinationDeg: number
-  /** LEO 高度 km */
-  leoAltitudeKm: number
+  /** 轨道预设(入轨类型) */
+  orbitPreset: OrbitPreset
   /** 上升段时间 min */
   ascentTimeMin: number
   /** 总时长 min(上升 + 一圈) */
@@ -86,8 +87,8 @@ function clamp(x: number, lo: number, hi: number): number {
 }
 
 /** LEO 高度 → 经验入轨射程 km(高度越高射程越远) */
-function insertRangeFor(leoAltitudeKm: number): number {
-  return Math.max(800, 600 + leoAltitudeKm * 4)
+function insertRangeFor(perigeeKm: number): number {
+  return Math.max(800, 600 + perigeeKm * 4)
 }
 
 /** 解算单个残骸(分离点 → 落区) */
@@ -95,21 +96,18 @@ function solveDebris(
   launch: LngLat,
   bearing: number,
   landing: MissionPoint,
-  leoAltitudeKm: number,
+  perigeeKm: number,
   insertRangeKm: number,
   ascentTimeMin: number,
   idx: number,
 ): DebrisSolution {
   const dist = haversineDistance(launch, landing)
-  // 落区距离 → 分离点距离(近落区早分离)
   const dSep = clamp(dist, 50, insertRangeKm * 0.95)
   const sepPoint = destinationPoint(launch, bearing, dSep)
-  const sepAltitudeKm = ascentAltitude(dSep / insertRangeKm, leoAltitudeKm)
+  const sepAltitudeKm = ascentAltitude(dSep / insertRangeKm, perigeeKm)
   const sepTimeMin = (dSep / insertRangeKm) * ascentTimeMin
-  // 下落时间(按分离高度经验估算)
   const fallTimeMin = clamp(Math.sqrt(sepAltitudeKm) * 0.3, 2, 8)
 
-  // 分离点 → 落区星下点路径
   const sepLngLat: LngLat = { lng: sepPoint[0], lat: sepPoint[1] }
   const pathDist = haversineDistance(sepLngLat, landing)
   const pathBearing = calculateBearing(sepLngLat, landing)
@@ -141,6 +139,16 @@ function interpolateTrack(track: [number, number][], idx: number): [number, numb
   return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]
 }
 
+/** 标量数组浮点索引线性插值(用于轨道高度序列) */
+function interpolateAltitudes(alts: number[], idx: number): number {
+  const last = alts.length - 1
+  const i = Math.floor(idx)
+  const a = alts[clamp(i, 0, last)]!
+  const b = alts[clamp(i + 1, 0, last)]!
+  const f = idx - i
+  return a + (b - a) * f
+}
+
 /** 上升帧浮点插值 */
 function interpolateAscent(ascent: AscentFrame[], t: number, atmVis: number): ObjectState {
   const last = ascent.length - 1
@@ -169,7 +177,6 @@ function buildFrames(
   debris: DebrisSolution[],
   orbit: OrbitSolution,
   ascentTimeMin: number,
-  leoAltitudeKm: number,
   atmVis: number,
   frameCount: number,
 ): MissionFrame[] {
@@ -177,27 +184,28 @@ function buildFrames(
   const tOrbit = orbit.periodMin
   const tTotal = tAscent + tOrbit
   const frames: MissionFrame[] = []
+  const trackLast = orbit.groundTrack.length - 1
 
   for (let i = 0; i <= frameCount; i++) {
     const t = (i / frameCount) * tTotal
     const frame: MissionFrame = { t, booster: null, debris: [] }
 
-    // 主体:上升段 或 轨道
     if (t <= tAscent) {
       frame.booster = interpolateAscent(ascent, t, atmVis)
     }
     else {
       const oτ = clamp((t - tAscent) / tOrbit, 0, 1)
-      const pos = interpolateTrack(orbit.groundTrack, oτ * (orbit.groundTrack.length - 1))
+      const idx = oτ * trackLast
+      const pos = interpolateTrack(orbit.groundTrack, idx)
+      const altitudeKm = interpolateAltitudes(orbit.altitudesKm, idx)
       frame.booster = {
         id: 'booster',
         pos,
-        altitudeKm: leoAltitudeKm,
-        visibilityRadiusKm: effectiveVisibilityRadius(leoAltitudeKm, atmVis),
+        altitudeKm,
+        visibilityRadiusKm: effectiveVisibilityRadius(altitudeKm, atmVis),
       }
     }
 
-    // 残骸:分离后下落,落地后停止
     for (const d of debris) {
       if (t < d.sepTimeMin)
         continue
@@ -221,12 +229,12 @@ function buildFrames(
 }
 
 /**
- * 解算完整任务:发射上升 → 助推分离落各落区 → 入 LEO → 绕地一圈
+ * 解算完整任务:发射上升 → 助推分离落各落区 → 入轨(预设轨道)→ 绕地一圈
  */
 export function solveMission(
   launch: MissionPoint,
   debrisLandings: MissionPoint[],
-  leoAltitudeKm: number,
+  orbitPreset: OrbitPreset,
   opts: SolveOptions = {},
 ): MissionSolution | null {
   if (debrisLandings.length === 0)
@@ -249,36 +257,49 @@ export function solveMission(
     }
   }
   const bearing = calculateBearing(launchLngLat, farthest)
-  const inclinationDeg = inclinationFromBearing(launch.lat, bearing)
+  const inclinationDeg = orbitPreset.inclinationDeg ?? inclinationFromBearing(launch.lat, bearing)
 
-  // 入轨点
-  const insertRangeKm = insertRangeFor(leoAltitudeKm)
+  // 入轨点(高度由近地点决定,射程按近地点推导)
+  const insertRangeKm = insertRangeFor(orbitPreset.perigeeKm)
   const insertArr = destinationPoint(launchLngLat, bearing, insertRangeKm)
   const insertPoint: [number, number] = [insertArr[0], insertArr[1]]
 
-  // 上升段
+  // 上升段(0 → 近地点高度)
   const ascent = solveAscent(
     launchLngLat,
     { lng: insertPoint[0], lat: insertPoint[1] },
-    leoAltitudeKm,
+    orbitPreset.perigeeKm,
     ascentTimeMin,
   )
 
-  // 残骸
+  // 残骸(分离高度上限 = 近地点高度)
   const debris = debrisLandings.map((landing, idx) =>
-    solveDebris(launchLngLat, bearing, landing, leoAltitudeKm, insertRangeKm, ascentTimeMin, idx),
+    solveDebris(launchLngLat, bearing, landing, orbitPreset.perigeeKm, insertRangeKm, ascentTimeMin, idx),
   )
 
-  // 轨道一圈
-  const orbit = solveOrbitTrack(insertPoint[0], insertPoint[1], inclinationDeg, leoAltitudeKm, ascentTimeMin)
+  // 轨道一圈(圆 / 椭圆统一)
+  const orbit = solveOrbitTrack(
+    insertPoint[0],
+    insertPoint[1],
+    inclinationDeg,
+    orbitPreset.perigeeKm,
+    ascentTimeMin,
+    undefined,
+    {
+      perigeeKm: orbitPreset.perigeeKm,
+      apogeeKm: orbitPreset.apogeeKm,
+      argPerigeeDeg: orbitPreset.argPerigeeDeg,
+      bearingDeg: bearing,
+    },
+  )
 
-  const frames = buildFrames(ascent, debris, orbit, ascentTimeMin, leoAltitudeKm, atmVis, frameCount)
+  const frames = buildFrames(ascent, debris, orbit, ascentTimeMin, atmVis, frameCount)
 
   return {
     launch,
     bearing,
     inclinationDeg,
-    leoAltitudeKm,
+    orbitPreset,
     ascentTimeMin,
     totalTimeMin: ascentTimeMin + orbit.periodMin,
     ascent,

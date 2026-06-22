@@ -59,14 +59,20 @@ const {
   ascentTimeMin: visibilityAscentTimeMin,
   orbitPeriodMin: visibilityOrbitPeriodMin,
   inclinationDeg: visibilityInclinationDeg,
+  perigeeKm: visibilityPerigeeKm,
+  apogeeKm: visibilityApogeeKm,
+  isElliptical: visibilityIsElliptical,
   isPlaying: visibilityIsPlaying,
   playbackRate: visibilityPlaybackRate,
+  orbitTypeId: visibilityOrbitTypeId,
+  showLeoSlider: visibilityShowLeoSlider,
   leoAltitudeKm: visibilityLeoAltitudeKm,
   errorMessage: visibilityError,
   enterSelectLaunchMode,
   enterSelectTargetsMode: reselectVisibilityTargets,
   removeTarget: removeVisibilityTarget,
   solve: solveVisibility,
+  setOrbitType: setVisibilityOrbitType,
   setLeoAltitude: setVisibilityLeoAltitude,
   setTime: setVisibilityTime,
   togglePlay: toggleVisibilityPlay,
@@ -252,8 +258,13 @@ function handleAstroTogglePin() {
         :ascent-time-min="visibilityAscentTimeMin"
         :orbit-period-min="visibilityOrbitPeriodMin"
         :inclination-deg="visibilityInclinationDeg"
+        :perigee-km="visibilityPerigeeKm"
+        :apogee-km="visibilityApogeeKm"
+        :is-elliptical="visibilityIsElliptical"
         :is-playing="visibilityIsPlaying"
         :playback-rate="visibilityPlaybackRate"
+        :orbit-type-id="visibilityOrbitTypeId"
+        :show-leo-slider="visibilityShowLeoSlider"
         :leo-altitude-km="visibilityLeoAltitudeKm"
         :error-message="visibilityError"
         @start="enterSelectLaunchMode"
@@ -264,6 +275,7 @@ function handleAstroTogglePin() {
         @remove-target="removeVisibilityTarget"
         @time-change="setVisibilityTime"
         @leo-change="setVisibilityLeoAltitude"
+        @orbit-type-change="setVisibilityOrbitType"
         @rate-change="setVisibilityPlaybackRate"
         @toggle-play="toggleVisibilityPlay"
         @seek-insert="seekVisibilityInsert"

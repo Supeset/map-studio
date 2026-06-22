@@ -2,8 +2,10 @@ import type { Feature, FeatureCollection } from 'geojson'
 import type { Map, MapMouseEvent } from 'mapbox-gl'
 import type { EnrichedPad } from '~/components/rocket/ListPanel.vue'
 import type { MissionFrame, MissionSolution } from '~/composables/rocket/useMission'
+import type { OrbitPreset, OrbitTypeId } from '~/constants/orbit-presets'
 import { sampleMissionFrame, solveMission } from '~/composables/rocket/useMission'
 import { useVisibilityRender } from '~/composables/rocket/useVisibilityRender'
+import { DEFAULT_ORBIT_TYPE_ID, findOrbitPreset } from '~/constants/orbit-presets'
 import { DEFAULT_ATMOSPHERIC_VISIBILITY_KM, PADS_POINT_ID } from '~/constants/rocket'
 
 export type VisibilityStep = 'idle' | 'select-launch' | 'select-targets' | 'result'
@@ -35,15 +37,31 @@ export function useRocketVisibility(
   const mission = ref<MissionSolution | null>(null)
   const errorMessage = ref<string | null>(null)
 
+  const orbitTypeId = ref<OrbitTypeId>(DEFAULT_ORBIT_TYPE_ID)
   const leoAltitudeKm = ref(DEFAULT_LEO_ALTITUDE_KM)
   const currentTimeMin = ref(0)
   const isPlaying = ref(false)
   const playbackRate = ref(1)
 
+  /** 当前轨道预设(基础值,LEO 时高度被 leoAltitudeKm 覆盖) */
+  const orbitPresetBase = computed(() => findOrbitPreset(orbitTypeId.value))
+  /** 用于解算的实际预设(LEO 时套用滑块高度) */
+  const effectiveOrbitPreset = computed<OrbitPreset>(() => {
+    const base = orbitPresetBase.value
+    if (base.id === 'leo')
+      return { ...base, perigeeKm: leoAltitudeKm.value, apogeeKm: leoAltitudeKm.value }
+    return base
+  })
+  /** 是否展示 LEO 高度滑块 */
+  const showLeoSlider = computed(() => orbitPresetBase.value.id === 'leo')
+
   const totalTimeMin = computed(() => mission.value?.totalTimeMin ?? 0)
   const ascentTimeMin = computed(() => mission.value?.ascentTimeMin ?? 0)
   const orbitPeriodMin = computed(() => mission.value?.orbit.periodMin ?? 0)
   const inclinationDeg = computed(() => mission.value?.inclinationDeg ?? 0)
+  const perigeeKm = computed(() => mission.value?.orbit.perigeeKm ?? 0)
+  const apogeeKm = computed(() => mission.value?.orbit.apogeeKm ?? 0)
+  const isElliptical = computed(() => mission.value?.orbit.elliptical ?? false)
   const currentFrame = computed<MissionFrame | null>(() =>
     mission.value ? sampleMissionFrame(mission.value.frames, currentTimeMin.value) : null,
   )
@@ -53,7 +71,7 @@ export function useRocketVisibility(
       errorMessage.value = '请选择发射点与至少一个落区'
       return
     }
-    const sol = solveMission(selectedLaunch.value, selectedTargets.value, leoAltitudeKm.value, {
+    const sol = solveMission(selectedLaunch.value, selectedTargets.value, effectiveOrbitPreset.value, {
       atmosphericVisibilityKm: atmVis,
     })
     if (!sol) {
@@ -193,6 +211,16 @@ export function useRocketVisibility(
       solve()
   }
 
+  function setOrbitType(id: OrbitTypeId) {
+    orbitTypeId.value = id
+    // 切换到需要更高倍率的轨道类型时,自动提速
+    const preset = findOrbitPreset(id)
+    if (preset.defaultPlaybackRate > playbackRate.value)
+      playbackRate.value = preset.defaultPlaybackRate
+    if (step.value === 'result' && selectedLaunch.value && selectedTargets.value.length)
+      solve()
+  }
+
   function setPlaybackRate(rate: number) {
     playbackRate.value = rate
   }
@@ -215,7 +243,15 @@ export function useRocketVisibility(
       {
         type: 'Feature',
         geometry: { type: 'LineString', coordinates: m.orbit.groundTrack },
-        properties: { kind: 'orbit', inclinationDeg: m.inclinationDeg, periodMin: m.orbit.periodMin },
+        properties: {
+          kind: 'orbit',
+          inclinationDeg: m.inclinationDeg,
+          periodMin: m.orbit.periodMin,
+          perigeeKm: m.orbit.perigeeKm,
+          apogeeKm: m.orbit.apogeeKm,
+          eccentricity: m.orbit.eccentricity,
+          orbitType: m.orbitPreset.id,
+        },
       } as Feature,
     ]
     for (const d of m.debris) {
@@ -283,14 +319,21 @@ export function useRocketVisibility(
     ascentTimeMin,
     orbitPeriodMin,
     inclinationDeg,
+    perigeeKm,
+    apogeeKm,
+    isElliptical,
     isPlaying,
     playbackRate,
+    orbitTypeId,
+    orbitPresetBase,
+    showLeoSlider,
     leoAltitudeKm,
     errorMessage,
     enterSelectLaunchMode,
     enterSelectTargetsMode,
     removeTarget,
     solve,
+    setOrbitType,
     setLeoAltitude,
     setTime,
     togglePlay,
