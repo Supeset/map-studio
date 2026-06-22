@@ -13,6 +13,8 @@ export interface OrbitPreset {
   apogeeKm: number
   /** 倾角 °(null = 由发射方位自动推导) */
   inclinationDeg: number | null
+  /** 若 true,忽略 inclinationDeg 与方位角推导,直接用 |发射场纬度| 作倾角(典型 GTO 简化) */
+  useLaunchLatitudeAsInclination?: boolean
   /** 近地点幅角 °(椭圆轨道有意义;圆轨道为 0) */
   argPerigeeDeg: number
   /** 是否椭圆 */
@@ -74,13 +76,14 @@ export const ORBIT_PRESETS: OrbitPreset[] = [
   {
     id: 'gto',
     name: 'GTO 地球同步转移',
-    description: '200 × 35786 km 大椭圆,倾角 28.5°,周期约 10.5 小时',
-    perigeeKm: 200,
-    apogeeKm: 35786,
-    inclinationDeg: 28.5,
+    description: '2000 km 圆轨道近似,倾角 = 发射场纬度',
+    perigeeKm: 2000,
+    apogeeKm: 2000,
+    inclinationDeg: null,
+    useLaunchLatitudeAsInclination: true,
     argPerigeeDeg: 0,
-    elliptical: true,
-    defaultPlaybackRate: 4,
+    elliptical: false,
+    defaultPlaybackRate: 2,
   },
   {
     id: 'molniya',

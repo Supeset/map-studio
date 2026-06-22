@@ -257,7 +257,10 @@ export function solveMission(
     }
   }
   const bearing = calculateBearing(launchLngLat, farthest)
-  const inclinationDeg = orbitPreset.inclinationDeg ?? inclinationFromBearing(launch.lat, bearing)
+  // GTO 简化:倾角 = |发射场纬度|(正东射的自然结果);其他轨道按 preset 或方位角推导
+  const inclinationDeg = orbitPreset.useLaunchLatitudeAsInclination
+    ? Math.abs(launch.lat)
+    : (orbitPreset.inclinationDeg ?? inclinationFromBearing(launch.lat, bearing))
 
   // 入轨点(高度由近地点决定,射程按近地点推导)
   const insertRangeKm = insertRangeFor(orbitPreset.perigeeKm)
