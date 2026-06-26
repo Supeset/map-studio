@@ -3,6 +3,7 @@ import type { IControl, Map } from 'mapbox-gl'
 import MapboxDraw from '@mapbox/mapbox-gl-draw'
 import mapboxgl from 'mapbox-gl'
 import { DRAW_STORAGE_KEY, drawStyles } from '~/constants/draw'
+import { isFeatureHidden } from '~/utils/featureMeta'
 
 function extendBoundsWithCoords(bounds: mapboxgl.LngLatBounds, coords: any) {
   if (Array.isArray(coords)) {
@@ -174,6 +175,10 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
   function selectFeature(id: string) {
     if (!drawInstance.value)
       return
+    const feature = drawInstance.value.get(id) as Feature | undefined
+    // 已隐藏的图形不可选中（地图上不可见）
+    if (!feature || isFeatureHidden(feature))
+      return
     drawInstance.value.changeMode('simple_select', { featureIds: [id] })
   }
 
@@ -192,6 +197,28 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
     else {
       mapInstance.value.fitBounds(bounds, { padding: 100, maxZoom: 15 })
     }
+  }
+
+  function toggleFeatureVisibility(id: string) {
+    if (!drawInstance.value)
+      return
+    const feature = drawInstance.value.get(id) as Feature | undefined
+    if (!feature)
+      return
+    const willHide = !isFeatureHidden(feature)
+    drawInstance.value.setFeatureProperty(id, 'hidden', willHide)
+
+    // MapboxDraw 的 setFeatureProperty 不会触发地图重绘（store.featureChanged 仅标记 dirty），
+    // 需用 set 全量刷新，drawStyles 里的 user_hidden filter 才会立即生效
+    const prevSelectedId = selectedFeatureId.value
+    drawInstance.value.set(drawInstance.value.getAll())
+    // set 会清空选中，恢复之前仍可见的选中项
+    if (prevSelectedId) {
+      const f = drawInstance.value.get(prevSelectedId)
+      if (f && !isFeatureHidden(f))
+        drawInstance.value.changeMode('simple_select', { featureIds: [prevSelectedId] })
+    }
+    updateStorage()
   }
 
   function updateFeatureProperty(key: string, value: any) {
@@ -351,6 +378,7 @@ export function useDrawTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<
     clearAll,
     selectFeature,
     focusFeature,
+    toggleFeatureVisibility,
     updateFeatureProperty,
     removeProperty,
     addDefaultStyles,

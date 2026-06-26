@@ -47,6 +47,11 @@ export function getFeatureColor(feature: Feature): string {
   }
 }
 
+export function isFeatureHidden(feature: Feature): boolean {
+  const props = (feature.properties ?? {}) as Record<string, any>
+  return props.user_hidden === true || props.hidden === true
+}
+
 export function getFeatureName(feature: Feature): string {
   const props = (feature.properties ?? {}) as Record<string, any>
   return (

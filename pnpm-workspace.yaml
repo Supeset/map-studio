@@ -46,10 +46,10 @@ catalogs:
     '@vueuse/nuxt': ^14.3.0
     nuxt: ^4.4.8
     unocss: ^66.7.2
-    unplugin: ^3.0.0
+    unplugin: ^3.2.0
     vite: ^8.0.16
   dev:
-    '@antfu/eslint-config': ^9.0.0
+    '@antfu/eslint-config': ^9.1.0
     '@types/geojson': ^7946.0.16
     '@types/mapbox__mapbox-gl-draw': ^1.4.9
     astronomy-bundle: ^7.7.7
@@ -64,7 +64,7 @@ catalogs:
     gcoord: ^1.0.7
     mapbox-gl: ^3.25.0
     pinia: ^3.0.4
-    vue: ^3.5.38
+    vue: ^3.5.39
   icons:
     '@iconify-json/carbon': ^1.2.23
     '@iconify-json/gis': ^1.2.5

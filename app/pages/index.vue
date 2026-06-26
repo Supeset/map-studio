@@ -42,6 +42,7 @@ const {
   clearAll,
   selectFeature,
   focusFeature,
+  toggleFeatureVisibility,
   updateFeatureProperty,
   removeProperty,
   addDefaultStyles,
@@ -201,6 +202,7 @@ function handleAstroTogglePin() {
           :selected-feature-id="selectedFeatureId"
           @select="selectFeature"
           @focus="focusFeature"
+          @toggle-visibility="toggleFeatureVisibility"
           @delete="deleteFeature"
           @clear-all="clearAll"
         />

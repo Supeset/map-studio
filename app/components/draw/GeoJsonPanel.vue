@@ -43,24 +43,30 @@ const importText = ref('')
 const isImportOpen = ref(false)
 const importMessage = ref<{ text: string, success: boolean } | null>(null)
 
-function handleImport() {
-  const text = importText.value.trim()
-  if (!text) return
+function showImportMessage(text: string, success: boolean) {
+  importMessage.value = { text, success }
+  setTimeout(() => importMessage.value = null, 3000)
+}
 
-  const converted = convertToGeoJSON(text, importFormat.value)
+function submitImport(text: string, format: ImportFormat) {
+  const converted = convertToGeoJSON(text, format)
   if (!converted) {
-    importMessage.value = { text: '无法解析文本中的坐标', success: false }
-    setTimeout(() => importMessage.value = null, 3000)
+    showImportMessage('无法解析数据，请检查格式', false)
     return
   }
 
   const result = emit('import', converted)
   if (result) {
-    importMessage.value = { text: result.message, success: result.success }
+    showImportMessage(result.message, result.success)
     if (result.success)
       importText.value = ''
-    setTimeout(() => importMessage.value = null, 3000)
   }
+}
+
+function handleImport() {
+  const text = importText.value.trim()
+  if (!text) return
+  submitImport(text, importFormat.value)
 }
 
 function handlePaste() {
@@ -68,10 +74,30 @@ function handlePaste() {
     importText.value = text
   }).catch(() => {})
 }
+
+// 从文件导入（.geojson / .json / .txt）
+const { open: openImportFile, onChange: onImportFileChange } = useFileDialog({
+  accept: '.geojson,.json,application/json,text/plain,.txt',
+})
+
+onImportFileChange((files) => {
+  const file = files?.[0]
+  if (!file)
+    return
+  const reader = new FileReader()
+  reader.onload = () => {
+    const text = String(reader.result ?? '')
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    // txt 视为 NOTAM 坐标文本，其余一律按 GeoJSON 解析
+    submitImport(text, ext === 'txt' ? 'notam' : 'geojson')
+  }
+  reader.onerror = () => showImportMessage('读取文件失败', false)
+  reader.readAsText(file)
+})
 </script>
 
 <template>
-  <ThePanel title="GeoJSON 数据" icon="i-carbon-code" :initial-open="false">
+  <ThePanel title="GeoJSON 数据" icon="i-carbon-code" :initial-open="true">
     <template #badge>
       <span
         v-if="selectedFeatureId"
@@ -82,6 +108,13 @@ function handlePaste() {
     </template>
 
     <template #actions>
+      <button
+        class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+        title="导入 GeoJSON 文件"
+        @click="openImportFile"
+      >
+        <div class="i-carbon-upload text-sm" />
+      </button>
       <button
         class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-gray-200 dark:hover:bg-gray-700"
         title="粘贴导入 GeoJSON"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Feature } from 'geojson'
 import ThePanel from '~/components/ThePanel.vue'
-import { getFeatureColor, getFeatureIcon, getFeatureName, getFeatureSubtitle } from '~/utils/featureMeta'
+import { getFeatureColor, getFeatureIcon, getFeatureName, getFeatureSubtitle, isFeatureHidden } from '~/utils/featureMeta'
 
 defineProps<{
   features: Feature[]
@@ -12,6 +12,7 @@ const emit = defineEmits<{
   (e: 'select', id: string): void
   (e: 'focus', id: string): void
   (e: 'delete', id: string): void
+  (e: 'toggle-visibility', id: string): void
   (e: 'clear-all'): void
 }>()
 
@@ -83,9 +84,12 @@ onUnmounted(() => {
         v-for="feature in features"
         :key="feature.id"
         class="group px-3 py-2.5 border-l-2 border-transparent flex gap-3 cursor-pointer transition-all"
-        :class="feature.id === selectedFeatureId
-          ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20'
-          : 'hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-900/10'"
+        :class="[
+          feature.id === selectedFeatureId
+            ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20'
+            : 'hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-900/10',
+          isFeatureHidden(feature) ? 'opacity-50' : '',
+        ]"
         @click="emit('select', String(feature.id))"
       >
         <!-- 类型图标（颜色反映要素样式） -->
@@ -115,6 +119,14 @@ onUnmounted(() => {
             @click="emit('focus', String(feature.id))"
           >
             <div class="i-carbon-target-point text-sm" />
+          </button>
+          <button
+            class="text-gray-400 p-1.5 rounded transition hover:text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-900/30"
+            :class="isFeatureHidden(feature) || feature.id === selectedFeatureId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+            :title="isFeatureHidden(feature) ? '显示图形' : '隐藏图形'"
+            @click="emit('toggle-visibility', String(feature.id))"
+          >
+            <div :class="isFeatureHidden(feature) ? 'i-carbon-view-off' : 'i-carbon-view'" class="text-sm" />
           </button>
           <button
             class="text-gray-400 p-1.5 rounded transition hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
