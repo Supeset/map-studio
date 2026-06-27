@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import type { MissionFrame, MissionSolution } from '~/composables/rocket/useMission'
 import type { VisibilityStep, VisPoint } from '~/composables/rocket/useRocketVisibility'
-import type { OrbitPreset, OrbitTypeId } from '~/constants/orbit-presets'
 import VisibilityProfile from '~/components/rocket/VisibilityProfile.vue'
 import VisibilityTimeline from '~/components/rocket/VisibilityTimeline.vue'
-import { ORBIT_PRESETS } from '~/constants/orbit-presets'
 
 defineProps<{
   step: VisibilityStep
@@ -22,8 +20,6 @@ defineProps<{
   isElliptical: boolean
   isPlaying: boolean
   playbackRate: number
-  orbitTypeId: OrbitTypeId
-  showLeoSlider: boolean
   leoAltitudeKm: number
   errorMessage: string | null
 }>()
@@ -38,7 +34,6 @@ const emit = defineEmits<{
   (e: 'remove-target', index: number): void
   (e: 'time-change', v: number): void
   (e: 'leo-change', v: number): void
-  (e: 'orbit-type-change', v: OrbitTypeId): void
   (e: 'rate-change', v: number): void
   (e: 'toggle-play'): void
   (e: 'seek-insert'): void
@@ -56,10 +51,6 @@ function stepIndex(step: VisibilityStep): number {
 
 function onLeoInput(e: Event) {
   emit('leo-change', Number((e.target as HTMLInputElement).value))
-}
-
-function presetLabel(p: OrbitPreset): string {
-  return p.elliptical ? `${p.name} · ${p.perigeeKm}×${p.apogeeKm}km` : `${p.name} · ${p.perigeeKm}km`
 }
 </script>
 
@@ -105,7 +96,7 @@ function presetLabel(p: OrbitPreset): string {
       <!-- idle -->
       <div v-if="step === 'idle'" class="flex gap-3 items-center">
         <div class="text-xs text-gray-500 leading-relaxed flex-1 dark:text-gray-400">
-          模拟完整任务:发射上升 → 助推分离落各残骸落区 → 入轨(LEO / 极地 / GTO / Molniya 等)→ 绕地一圈星下点。基于发射方位推导轨道倾角,全程时间轴回放各阶段可见范围。
+          模拟完整任务:发射上升 → 入轨(LEO 低轨)→ 绕地一圈星下点。由落区确定发射方位并推导轨道倾角,全程时间轴回放各阶段可见范围。
         </div>
         <button
           class="text-sm text-white px-4 py-1.5 rounded-lg bg-orange-500 flex shrink-0 gap-1.5 transition items-center hover:bg-orange-600"
@@ -135,7 +126,7 @@ function presetLabel(p: OrbitPreset): string {
         <div class="flex gap-3 items-center">
           <div class="i-carbon-target-point text-lg text-teal-500 animate-pulse" />
           <div class="text-sm text-gray-700 font-medium flex-1 dark:text-gray-200">
-            点击地图添加残骸落区(已选 {{ targets.length }} 个)
+            点击地图添加落区(已选 {{ targets.length }} 个)
           </div>
         </div>
         <div v-if="targets.length" class="gap-1.5 grid grid-cols-2">
@@ -157,42 +148,6 @@ function presetLabel(p: OrbitPreset): string {
             >
               ✕
             </button>
-          </div>
-        </div>
-
-        <!-- 入轨轨道类型选择 -->
-        <div class="p-2 border border-blue-100 rounded-lg bg-blue-50/60 dark:border-blue-900/40 dark:bg-blue-900/10">
-          <div class="mb-1.5 flex gap-1.5 items-center">
-            <div class="i-carbon-orbit text-sm text-blue-500" />
-            <span class="text-xs text-gray-700 font-medium dark:text-gray-200">入轨轨道类型</span>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500">— 选择目标轨道</span>
-          </div>
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="p in ORBIT_PRESETS"
-              :key="p.id"
-              class="text-[11px] px-2 py-1 border rounded-md transition"
-              :class="orbitTypeId === p.id
-                ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:border-blue-600'"
-              :title="p.description"
-              @click="emit('orbit-type-change', p.id)"
-            >
-              {{ p.name }}
-            </button>
-          </div>
-          <div v-if="showLeoSlider" class="mt-2 flex gap-2 items-center">
-            <span class="text-[10px] text-gray-500 dark:text-gray-400">高度</span>
-            <input
-              type="range"
-              :value="leoAltitudeKm"
-              min="200"
-              max="1200"
-              step="50"
-              class="accent-blue-500 w-40"
-              @input="onLeoInput"
-            >
-            <span class="text-[10px] text-blue-600 font-mono dark:text-blue-400">{{ leoAltitudeKm }} km</span>
           </div>
         </div>
 
@@ -280,26 +235,10 @@ function presetLabel(p: OrbitPreset): string {
           />
         </div>
 
-        <!-- 轨道类型切换 + LEO 高度滑块 + 操作 -->
+        <!-- LEO 高度滑块 + 操作 -->
         <div class="space-y-2">
-          <div class="flex flex-wrap gap-1.5 items-center">
-            <span class="text-xs text-gray-500 shrink-0 dark:text-gray-400">轨道</span>
-            <button
-              v-for="p in ORBIT_PRESETS"
-              :key="p.id"
-              class="text-[11px] px-2 py-0.5 border rounded transition"
-              :class="orbitTypeId === p.id
-                ? 'bg-blue-500 text-white border-blue-500 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:border-blue-600'"
-              :title="presetLabel(p)"
-              @click="emit('orbit-type-change', p.id)"
-            >
-              {{ p.name }}
-            </button>
-          </div>
-
           <div class="flex items-center justify-between">
-            <div v-if="showLeoSlider" class="flex gap-2 items-center">
+            <div class="flex gap-2 items-center">
               <span class="text-xs text-gray-500 dark:text-gray-400">LEO</span>
               <input
                 type="range"
@@ -311,9 +250,6 @@ function presetLabel(p: OrbitPreset): string {
                 @input="onLeoInput"
               >
               <span class="text-xs text-blue-600 font-mono dark:text-blue-400">{{ leoAltitudeKm }} km</span>
-            </div>
-            <div v-else class="text-xs text-gray-400 italic dark:text-gray-500">
-              {{ mission.orbitPreset.description }}
             </div>
             <div class="flex shrink-0 gap-2">
               <button

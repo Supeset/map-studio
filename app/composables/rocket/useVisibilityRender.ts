@@ -6,16 +6,12 @@ import { buildVisibilityEnvelope } from '~/composables/rocket/useTrajectory'
 import {
   ROCKET_ASCENT_LAYER,
   ROCKET_BOOSTER_MARKER_LAYER,
-  ROCKET_DEBRIS_MARKER_LAYER,
-  ROCKET_DEBRIS_PATH_LAYER,
   ROCKET_ENVELOPE_15_LAYER,
   ROCKET_ENVELOPE_45_LAYER,
   ROCKET_MARKERS_LAYER,
   ROCKET_ORBIT_LAYER,
   ROCKET_VIS_BOOSTER_FILL_LAYER,
   ROCKET_VIS_BOOSTER_OUTLINE_LAYER,
-  ROCKET_VIS_DEBRIS_FILL_LAYER,
-  ROCKET_VIS_DEBRIS_OUTLINE_LAYER,
   ROCKET_VIS_DYNAMIC_SOURCE,
   ROCKET_VIS_STATIC_SOURCE,
 } from '~/constants/rocket'
@@ -29,23 +25,22 @@ const ALL_LAYERS = [
   ROCKET_ENVELOPE_45_LAYER,
   ROCKET_ASCENT_LAYER,
   ROCKET_ORBIT_LAYER,
-  ROCKET_DEBRIS_PATH_LAYER,
   ROCKET_VIS_BOOSTER_FILL_LAYER,
-  ROCKET_VIS_DEBRIS_FILL_LAYER,
   ROCKET_VIS_BOOSTER_OUTLINE_LAYER,
-  ROCKET_VIS_DEBRIS_OUTLINE_LAYER,
   ROCKET_MARKERS_LAYER,
   ROCKET_BOOSTER_MARKER_LAYER,
-  ROCKET_DEBRIS_MARKER_LAYER,
 ]
 
 /**
  * 任务剖面渲染层:纯渲染,无业务状态
- * - 静态层:上升轨迹 / 残骸弹道 / 轨道一圈 / 热力 / 端点标记
- * - 动态层:当前主体 + 各残骸可见圆 / 位置
+ * - 静态层:上升轨迹 / 轨道一圈 / 可见包络 / 端点标记(发射/入轨/落区)
+ * - 动态层:当前主体可见圆 / 位置
  */
 export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
   function ensureLayers(map: Map) {
+    // 已初始化则跳过(STATIC source 存在即全部图层就绪;style 切换会清 source → 自动重建)
+    if (map.getSource(ROCKET_VIS_STATIC_SOURCE))
+      return
     if (!map.getSource(ROCKET_VIS_STATIC_SOURCE))
       map.addSource(ROCKET_VIS_STATIC_SOURCE, { type: 'geojson', data: EMPTY_FC })
     if (!map.getSource(ROCKET_VIS_DYNAMIC_SOURCE))
@@ -71,16 +66,6 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
         filter: ['==', ['get', 'kind'], 'orbit'],
         layout: lineLayout,
         paint: { 'line-color': '#3b82f6', 'line-width': 2.5, 'line-opacity': 0.85 },
-      })
-    }
-    if (!map.getLayer(ROCKET_DEBRIS_PATH_LAYER)) {
-      map.addLayer({
-        id: ROCKET_DEBRIS_PATH_LAYER,
-        type: 'line',
-        source: ROCKET_VIS_STATIC_SOURCE,
-        filter: ['==', ['get', 'kind'], 'debris-path'],
-        layout: lineLayout,
-        paint: { 'line-color': '#a855f7', 'line-width': 1, 'line-dasharray': [2, 2], 'line-opacity': 0.5 },
       })
     }
     if (!map.getLayer(ROCKET_ENVELOPE_15_LAYER)) {
@@ -112,15 +97,6 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
         paint: { 'fill-color': '#f97316', 'fill-opacity': 0.1 },
       })
     }
-    if (!map.getLayer(ROCKET_VIS_DEBRIS_FILL_LAYER)) {
-      map.addLayer({
-        id: ROCKET_VIS_DEBRIS_FILL_LAYER,
-        type: 'fill',
-        source: ROCKET_VIS_DYNAMIC_SOURCE,
-        filter: ['==', ['get', 'kind'], 'vis-debris'],
-        paint: { 'fill-color': '#a855f7', 'fill-opacity': 0.08 },
-      })
-    }
     if (!map.getLayer(ROCKET_VIS_BOOSTER_OUTLINE_LAYER)) {
       map.addLayer({
         id: ROCKET_VIS_BOOSTER_OUTLINE_LAYER,
@@ -128,15 +104,6 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
         source: ROCKET_VIS_DYNAMIC_SOURCE,
         filter: ['==', ['get', 'kind'], 'vis-booster'],
         paint: { 'line-color': '#f97316', 'line-width': 1.6, 'line-opacity': 0.8 },
-      })
-    }
-    if (!map.getLayer(ROCKET_VIS_DEBRIS_OUTLINE_LAYER)) {
-      map.addLayer({
-        id: ROCKET_VIS_DEBRIS_OUTLINE_LAYER,
-        type: 'line',
-        source: ROCKET_VIS_DYNAMIC_SOURCE,
-        filter: ['==', ['get', 'kind'], 'vis-debris'],
-        paint: { 'line-color': '#a855f7', 'line-width': 1.2, 'line-opacity': 0.7 },
       })
     }
     if (!map.getLayer(ROCKET_MARKERS_LAYER)) {
@@ -172,15 +139,6 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
         paint: { 'circle-radius': 9, 'circle-color': '#ef4444', 'circle-stroke-width': 3, 'circle-stroke-color': '#ffffff' },
       })
     }
-    if (!map.getLayer(ROCKET_DEBRIS_MARKER_LAYER)) {
-      map.addLayer({
-        id: ROCKET_DEBRIS_MARKER_LAYER,
-        type: 'circle',
-        source: ROCKET_VIS_DYNAMIC_SOURCE,
-        filter: ['==', ['get', 'kind'], 'debris'],
-        paint: { 'circle-radius': 6, 'circle-color': '#a855f7', 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' },
-      })
-    }
   }
 
   function renderMissionStatic(sol: MissionSolution, _atmosphericVisibilityKm: number) {
@@ -196,14 +154,6 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
       geometry: { type: 'LineString', coordinates: sol.ascent.map(f => f.pos) },
       properties: { kind: 'ascent' },
     } as Feature)
-
-    for (const d of sol.debris) {
-      features.push({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: d.path },
-        properties: { kind: 'debris-path' },
-      } as Feature)
-    }
 
     features.push({
       type: 'Feature',
@@ -261,25 +211,13 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
       const b = frame.booster
       features.push({
         type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: generateCirclePolygon({ lng: b.pos[0], lat: b.pos[1] }, Math.max(b.visibilityRadiusKm, 0.1), 48) },
+        geometry: { type: 'Polygon', coordinates: generateCirclePolygon({ lng: b.pos[0], lat: b.pos[1] }, Math.max(b.visibilityRadiusKm, 0.1), 32) },
         properties: { kind: 'vis-booster' },
       } as Feature)
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: b.pos },
         properties: { kind: 'booster', altitudeKm: b.altitudeKm },
-      } as Feature)
-    }
-    for (const d of frame.debris) {
-      features.push({
-        type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: generateCirclePolygon({ lng: d.pos[0], lat: d.pos[1] }, Math.max(d.visibilityRadiusKm, 0.1), 40) },
-        properties: { kind: 'vis-debris' },
-      } as Feature)
-      features.push({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: d.pos },
-        properties: { kind: 'debris', altitudeKm: d.altitudeKm },
       } as Feature)
     }
 

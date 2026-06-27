@@ -44,8 +44,6 @@ export interface MissionFrame {
   t: number
   /** 火箭主体(上升段或轨道) */
   booster: ObjectState | null
-  /** 各活动残骸(已分离且未落地) */
-  debris: ObjectState[]
 }
 
 /** 完整任务解算结果 */
@@ -102,11 +100,35 @@ function solveDebris(
   idx: number,
 ): DebrisSolution {
   const dist = haversineDistance(launch, landing)
-  const dSep = clamp(dist, 50, insertRangeKm * 0.95)
-  const sepPoint = destinationPoint(launch, bearing, dSep)
-  const sepAltitudeKm = ascentAltitude(dSep / insertRangeKm, perigeeKm)
-  const sepTimeMin = (dSep / insertRangeKm) * ascentTimeMin
+  const vHoriz = insertRangeKm / ascentTimeMin
+
+  // 分离后助推器水平滑行(继承主体水平速度),落点 = 分离点 + 滑行距离
+  const glideAt = (s: number): number =>
+    vHoriz * clamp(Math.sqrt(ascentAltitude(s / insertRangeKm, perigeeKm)) * 0.3, 2, 8)
+
+  // 反推分离点距离 sSep:dist = sSep + glide(sSep)(扣除滑行 → 分离更早、点更近)
+  // f(s)=s+glide(s)-dist 单调增,二分求解
+  const lo = 50
+  const hi = Math.min(dist, insertRangeKm * 0.95)
+  let sSep = lo
+  if (lo < hi && lo + glideAt(lo) < dist) {
+    let a = lo
+    let b = hi
+    for (let k = 0; k < 24; k++) {
+      const m = (a + b) / 2
+      if (m + glideAt(m) < dist)
+        a = m
+      else
+        b = m
+    }
+    sSep = (a + b) / 2
+  }
+
+  const τ = sSep / insertRangeKm
+  const sepAltitudeKm = ascentAltitude(τ, perigeeKm)
+  const sepTimeMin = τ * ascentTimeMin
   const fallTimeMin = clamp(Math.sqrt(sepAltitudeKm) * 0.3, 2, 8)
+  const sepPoint = destinationPoint(launch, bearing, sSep)
 
   const sepLngLat: LngLat = { lng: sepPoint[0], lat: sepPoint[1] }
   const pathDist = haversineDistance(sepLngLat, landing)
@@ -171,10 +193,9 @@ function interpolateAscent(ascent: AscentFrame[], t: number, atmVis: number): Ob
   }
 }
 
-/** 生成统一时间帧(贯穿上升 + 轨道一圈,含各残骸) */
+/** 生成统一时间帧(贯穿上升 + 轨道一圈) */
 function buildFrames(
   ascent: AscentFrame[],
-  debris: DebrisSolution[],
   orbit: OrbitSolution,
   ascentTimeMin: number,
   atmVis: number,
@@ -188,7 +209,7 @@ function buildFrames(
 
   for (let i = 0; i <= frameCount; i++) {
     const t = (i / frameCount) * tTotal
-    const frame: MissionFrame = { t, booster: null, debris: [] }
+    const frame: MissionFrame = { t, booster: null }
 
     if (t <= tAscent) {
       frame.booster = interpolateAscent(ascent, t, atmVis)
@@ -204,22 +225,6 @@ function buildFrames(
         altitudeKm,
         visibilityRadiusKm: effectiveVisibilityRadius(altitudeKm, atmVis),
       }
-    }
-
-    for (const d of debris) {
-      if (t < d.sepTimeMin)
-        continue
-      const fallτ = (t - d.sepTimeMin) / d.fallTimeMin
-      if (fallτ >= 1)
-        continue
-      const pos = interpolateTrack(d.path, fallτ * (d.path.length - 1))
-      const altitudeKm = d.sepAltitudeKm * (1 - fallτ * fallτ)
-      frame.debris.push({
-        id: d.id,
-        pos,
-        altitudeKm,
-        visibilityRadiusKm: effectiveVisibilityRadius(altitudeKm, atmVis),
-      })
     }
 
     frames.push(frame)
@@ -296,7 +301,7 @@ export function solveMission(
     },
   )
 
-  const frames = buildFrames(ascent, debris, orbit, ascentTimeMin, atmVis, frameCount)
+  const frames = buildFrames(ascent, orbit, ascentTimeMin, atmVis, frameCount)
 
   return {
     launch,
@@ -313,15 +318,35 @@ export function solveMission(
   }
 }
 
-/** 时间轴查询:返回 t 对应的统一帧(最近) */
+/** 时间轴查询:返回 t 对应的统一帧(相邻帧间线性插值,避免量化跳跃) */
 export function sampleMissionFrame(frames: MissionFrame[], t: number): MissionFrame {
   if (frames.length === 0)
-    return { t, booster: null, debris: [] }
+    return { t, booster: null }
+  const first = frames[0]!
   const last = frames[frames.length - 1]!
-  if (t <= frames[0]!.t)
-    return frames[0]!
+  if (t <= first.t)
+    return first
   if (t >= last.t)
     return last
-  const idx = Math.round((t / last.t) * (frames.length - 1))
-  return frames[clamp(idx, 0, frames.length - 1)]!
+
+  // 浮点索引在相邻帧间线性插值(避免 Math.round 量化导致的红点跳跃卡顿)
+  const idx = (t / last.t) * (frames.length - 1)
+  const i = Math.floor(idx)
+  const f = idx - i
+  const a = frames[i]!
+  const b = frames[i + 1] ?? a
+
+  const lerp = (x: number, y: number): number => x + (y - x) * f
+  const interpState = (x: ObjectState, y: ObjectState): ObjectState => ({
+    id: x.id,
+    pos: [lerp(x.pos[0], y.pos[0]), lerp(x.pos[1], y.pos[1])],
+    altitudeKm: lerp(x.altitudeKm, y.altitudeKm),
+    visibilityRadiusKm: lerp(x.visibilityRadiusKm, y.visibilityRadiusKm),
+  })
+
+  const booster = a.booster && b.booster
+    ? interpState(a.booster, b.booster)
+    : (a.booster ?? b.booster)
+
+  return { t, booster }
 }

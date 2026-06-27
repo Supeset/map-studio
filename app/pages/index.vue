@@ -65,15 +65,12 @@ const {
   isElliptical: visibilityIsElliptical,
   isPlaying: visibilityIsPlaying,
   playbackRate: visibilityPlaybackRate,
-  orbitTypeId: visibilityOrbitTypeId,
-  showLeoSlider: visibilityShowLeoSlider,
   leoAltitudeKm: visibilityLeoAltitudeKm,
   errorMessage: visibilityError,
   enterSelectLaunchMode,
   enterSelectTargetsMode: reselectVisibilityTargets,
   removeTarget: removeVisibilityTarget,
   solve: solveVisibility,
-  setOrbitType: setVisibilityOrbitType,
   setLeoAltitude: setVisibilityLeoAltitude,
   setTime: setVisibilityTime,
   togglePlay: toggleVisibilityPlay,
@@ -166,7 +163,7 @@ function handleAstroTogglePin() {
         class="flex pointer-events-none left-0 right-0 top-16 justify-center absolute z-40"
       >
         <div class="text-sm text-white/90 tracking-wide font-medium px-6 py-2 border border-orange-400/30 rounded-full bg-orange-600/80 shadow-lg backdrop-blur-md">
-          {{ visibilityStep === 'select-launch' ? '请在地图上点击发射场图标' : '点击地图添加残骸落区(可多个)' }}
+          {{ visibilityStep === 'select-launch' ? '请在地图上点击发射场图标' : '点击地图添加落区(可多个)' }}
         </div>
       </div>
     </Transition>
@@ -265,8 +262,6 @@ function handleAstroTogglePin() {
         :is-elliptical="visibilityIsElliptical"
         :is-playing="visibilityIsPlaying"
         :playback-rate="visibilityPlaybackRate"
-        :orbit-type-id="visibilityOrbitTypeId"
-        :show-leo-slider="visibilityShowLeoSlider"
         :leo-altitude-km="visibilityLeoAltitudeKm"
         :error-message="visibilityError"
         @start="enterSelectLaunchMode"
@@ -277,7 +272,6 @@ function handleAstroTogglePin() {
         @remove-target="removeVisibilityTarget"
         @time-change="setVisibilityTime"
         @leo-change="setVisibilityLeoAltitude"
-        @orbit-type-change="setVisibilityOrbitType"
         @rate-change="setVisibilityPlaybackRate"
         @toggle-play="toggleVisibilityPlay"
         @seek-insert="seekVisibilityInsert"

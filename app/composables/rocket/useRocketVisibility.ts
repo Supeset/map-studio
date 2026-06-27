@@ -2,10 +2,10 @@ import type { Feature, FeatureCollection } from 'geojson'
 import type { Map, MapMouseEvent } from 'mapbox-gl'
 import type { EnrichedPad } from '~/components/rocket/ListPanel.vue'
 import type { MissionFrame, MissionSolution } from '~/composables/rocket/useMission'
-import type { OrbitPreset, OrbitTypeId } from '~/constants/orbit-presets'
+import type { OrbitPreset } from '~/constants/orbit-presets'
 import { sampleMissionFrame, solveMission } from '~/composables/rocket/useMission'
 import { useVisibilityRender } from '~/composables/rocket/useVisibilityRender'
-import { DEFAULT_ORBIT_TYPE_ID, findOrbitPreset } from '~/constants/orbit-presets'
+import { findOrbitPreset } from '~/constants/orbit-presets'
 import { DEFAULT_ATMOSPHERIC_VISIBILITY_KM, PADS_POINT_ID } from '~/constants/rocket'
 
 export type VisibilityStep = 'idle' | 'select-launch' | 'select-targets' | 'result'
@@ -37,23 +37,19 @@ export function useRocketVisibility(
   const mission = ref<MissionSolution | null>(null)
   const errorMessage = ref<string | null>(null)
 
-  const orbitTypeId = ref<OrbitTypeId>(DEFAULT_ORBIT_TYPE_ID)
   const leoAltitudeKm = ref(DEFAULT_LEO_ALTITUDE_KM)
   const currentTimeMin = ref(0)
   const isPlaying = ref(false)
   const playbackRate = ref(1)
 
-  /** 当前轨道预设(基础值,LEO 时高度被 leoAltitudeKm 覆盖) */
-  const orbitPresetBase = computed(() => findOrbitPreset(orbitTypeId.value))
-  /** 用于解算的实际预设(LEO 时套用滑块高度) */
-  const effectiveOrbitPreset = computed<OrbitPreset>(() => {
-    const base = orbitPresetBase.value
-    if (base.id === 'leo')
-      return { ...base, perigeeKm: leoAltitudeKm.value, apogeeKm: leoAltitudeKm.value }
-    return base
-  })
-  /** 是否展示 LEO 高度滑块 */
-  const showLeoSlider = computed(() => orbitPresetBase.value.id === 'leo')
+  /** 固定 LEO 低轨基础预设(高度被 leoAltitudeKm 覆盖) */
+  const LEO_PRESET = findOrbitPreset('leo')
+  /** 用于解算的实际预设(套用滑块高度) */
+  const effectiveOrbitPreset = computed<OrbitPreset>(() => ({
+    ...LEO_PRESET,
+    perigeeKm: leoAltitudeKm.value,
+    apogeeKm: leoAltitudeKm.value,
+  }))
 
   const totalTimeMin = computed(() => mission.value?.totalTimeMin ?? 0)
   const ascentTimeMin = computed(() => mission.value?.ascentTimeMin ?? 0)
@@ -211,16 +207,6 @@ export function useRocketVisibility(
       solve()
   }
 
-  function setOrbitType(id: OrbitTypeId) {
-    orbitTypeId.value = id
-    // 切换到需要更高倍率的轨道类型时,自动提速
-    const preset = findOrbitPreset(id)
-    if (preset.defaultPlaybackRate > playbackRate.value)
-      playbackRate.value = preset.defaultPlaybackRate
-    if (step.value === 'result' && selectedLaunch.value && selectedTargets.value.length)
-      solve()
-  }
-
   function setPlaybackRate(rate: number) {
     playbackRate.value = rate
   }
@@ -254,13 +240,6 @@ export function useRocketVisibility(
         },
       } as Feature,
     ]
-    for (const d of m.debris) {
-      features.push({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: d.path },
-        properties: { kind: 'debris-path', landing: d.landing.name },
-      } as Feature)
-    }
     features.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [m.launch.lng, m.launch.lat] },
@@ -324,16 +303,12 @@ export function useRocketVisibility(
     isElliptical,
     isPlaying,
     playbackRate,
-    orbitTypeId,
-    orbitPresetBase,
-    showLeoSlider,
     leoAltitudeKm,
     errorMessage,
     enterSelectLaunchMode,
     enterSelectTargetsMode,
     removeTarget,
     solve,
-    setOrbitType,
     setLeoAltitude,
     setTime,
     togglePlay,
