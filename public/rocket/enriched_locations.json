@@ -90,16 +90,6 @@
     "coordinates": "128.334834,51.884479"
   },
   {
-    "record_id": "recveXyFg5oVhy",
-    "latitude": 36.631333,
-    "longitude": 121.198361,
-    "name": "Haiyang offshore launch location",
-    "location_name_en": "Haiyang offshore launch location, Haiyang Oriental Spaceport, China",
-    "country": "🇨🇳中国",
-    "launch_center": "东方航天港",
-    "coordinates": "121.198361,36.631333"
-  },
-  {
     "record_id": "recPR3uaED",
     "latitude": 34.755648,
     "longitude": -120.622401,
@@ -178,6 +168,66 @@
     "country": "🇬🇫法属圭亚那",
     "launch_center": "圭亚那航天中心",
     "coordinates": "-52.774937,5.236893"
+  },
+  {
+    "record_id": "recveXyFg5oVhy",
+    "latitude": 36.631333,
+    "longitude": 121.198361,
+    "name": "Haiyang offshore launch location",
+    "location_name_en": "Haiyang offshore launch location, Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "海阳东方航天港",
+    "coordinates": "121.198361,36.631333"
+  },
+  {
+    "record_id": "recvqmwcwhrEc6",
+    "latitude": 34.899444,
+    "longitude": 121.190278,
+    "name": "Yellow Sea (launch location 1)",
+    "location_name_en": "Yellow Sea (launch location 1), Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "海阳东方航天港",
+    "coordinates": "121.190278,34.899444"
+  },
+  {
+    "record_id": "recvqmw939TZzA",
+    "latitude": 34.311667,
+    "longitude": 123.761111,
+    "name": "Yellow Sea (launch location 2)",
+    "location_name_en": "Yellow Sea (launch location 2), Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "海阳东方航天港",
+    "coordinates": "123.761111,34.311667"
+  },
+  {
+    "record_id": "recvqmw41vqPx4",
+    "latitude": 32.183333,
+    "longitude": 123.8,
+    "name": "Yellow Sea (launch location 3)",
+    "location_name_en": "Yellow Sea (launch location 3), Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "海阳东方航天港",
+    "coordinates": "123.8,32.183333"
+  },
+  {
+    "record_id": "recvqmw0Lg5QWd",
+    "latitude": 37.3395,
+    "longitude": 123.7115,
+    "name": "Yellow Sea (launch location 4)",
+    "location_name_en": "Yellow Sea (launch location 4), Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "海阳东方航天港",
+    "coordinates": "123.7115,37.3395"
+  },
+  {
+    "record_id": "recvqmvrrmLNGQ",
+    "latitude": 31.2,
+    "longitude": 123.7,
+    "name": "Yellow Sea (launch location 5)",
+    "location_name_en": "Yellow Sea (launch location 5), Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "海阳东方航天港",
+    "coordinates": "123.7,31.2"
   },
   {
     "record_id": "recA5Gzlw2",
