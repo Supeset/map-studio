@@ -90,6 +90,16 @@
     "coordinates": "128.334834,51.884479"
   },
   {
+    "record_id": "recveXyFg5oVhy",
+    "latitude": 36.631333,
+    "longitude": 121.198361,
+    "name": "Haiyang offshore launch location",
+    "location_name_en": "Haiyang offshore launch location, Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "东方航天港",
+    "coordinates": "121.198361,36.631333"
+  },
+  {
     "record_id": "recPR3uaED",
     "latitude": 34.755648,
     "longitude": -120.622401,
@@ -118,6 +128,16 @@
     "country": "🇺🇸美国",
     "launch_center": "范登堡空军基地",
     "coordinates": "-120.632462,34.576332"
+  },
+  {
+    "record_id": "recvgDg7VyyD9e",
+    "latitude": 21.366667,
+    "longitude": 112.116667,
+    "name": "South China Sea (launch location 3)",
+    "location_name_en": "South China Sea (launch location 3), Haiyang Oriental Spaceport, China",
+    "country": "🇨🇳中国",
+    "launch_center": "广东阳江海面发射",
+    "coordinates": "112.116667,21.366667"
   },
   {
     "record_id": "rec7q4KLd7",
@@ -190,6 +210,16 @@
     "coordinates": "135.889502,33.544224"
   },
   {
+    "record_id": "recvmBWvXD6vL7",
+    "latitude": 40.891596,
+    "longitude": 100.217289,
+    "name": "Long March 12 series Pad",
+    "location_name_en": "Long March 12 series Pad, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.217289,40.891596"
+  },
+  {
     "record_id": "recuMzGto8E92n",
     "latitude": 40.855242,
     "longitude": 100.199634,
@@ -208,6 +238,16 @@
     "country": "🇨🇳中国",
     "launch_center": "酒泉卫星发射中心",
     "coordinates": "100.22514,40.8182"
+  },
+  {
+    "record_id": "recvfv5Fk8Pjee",
+    "latitude": 40.81748,
+    "longitude": 100.21939,
+    "name": "Site 140",
+    "location_name_en": "Site 140, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.21939,40.81748"
   },
   {
     "record_id": "recv4TmhnaUA0z",
@@ -230,6 +270,16 @@
     "coordinates": "100.343365,40.969108"
   },
   {
+    "record_id": "rec7JaMvOl",
+    "latitude": 40.914911,
+    "longitude": 100.245502,
+    "name": "Site 96A",
+    "location_name_en": "Site 96A, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.245502,40.914911"
+  },
+  {
     "record_id": "recv3TB69Vwlef",
     "latitude": 40.92017,
     "longitude": 100.25129,
@@ -240,6 +290,16 @@
     "coordinates": "100.25129,40.92017"
   },
   {
+    "record_id": "recvgfFAHxgO6m",
+    "latitude": 40.8072,
+    "longitude": 100.13644,
+    "name": "Tianlong-3 Launch Pad",
+    "location_name_en": "Tianlong-3 Launch Pad, Jiuquan Satellite Launch Center, China",
+    "country": "🇨🇳中国",
+    "launch_center": "酒泉卫星发射中心",
+    "coordinates": "100.13644,40.8072"
+  },
+  {
     "record_id": "rec0IcYYv7",
     "latitude": 28.608298,
     "longitude": -80.604159,
@@ -248,6 +308,16 @@
     "country": "🇺🇸美国",
     "launch_center": "肯尼迪航天中心",
     "coordinates": "-80.604159,28.608298"
+  },
+  {
+    "record_id": "recvgfFREpZokH",
+    "latitude": 28.627256,
+    "longitude": -80.620825,
+    "name": "LC-39B",
+    "location_name_en": "LC-39B, Kennedy Space Center, Florida, USA",
+    "country": "🇺🇸美国",
+    "launch_center": "肯尼迪航天中心",
+    "coordinates": "-80.620825,28.627256"
   },
   {
     "record_id": "recks7b4A2",
@@ -321,23 +391,13 @@
   },
   {
     "record_id": "recRzaOiUZ",
-    "latitude": 28.5017,
-    "longitude": -80.551836,
+    "latitude": 28.50219,
+    "longitude": -80.55129,
     "name": "LC-16",
     "location_name_en": "LC-16, Cape Canaveral SFS, Florida, USA",
     "country": "🇺🇸美国",
     "launch_center": "卡纳维拉尔角空军站",
-    "coordinates": "-80.551836,28.5017"
-  },
-  {
-    "record_id": "recuIHTgN8BC5O",
-    "latitude": 28.471819,
-    "longitude": -80.538195,
-    "name": "LC-36",
-    "location_name_en": "LC-36, Cape Canaveral SFS, Florida, USA",
-    "country": "🇺🇸美国",
-    "launch_center": "卡纳维拉尔角空军站",
-    "coordinates": "-80.538195,28.471819"
+    "coordinates": "-80.55129,28.50219"
   },
   {
     "record_id": "recXsQyXPC",
@@ -471,23 +531,23 @@
   },
   {
     "record_id": "recR51EagR",
-    "latitude": 28.245266,
-    "longitude": 102.026982,
+    "latitude": 28.245504,
+    "longitude": 102.026768,
     "name": "LC-2",
     "location_name_en": "LC-2, Xichang Satellite Launch Center, China",
     "country": "🇨🇳中国",
     "launch_center": "西昌卫星发射中心",
-    "coordinates": "102.026982,28.245266"
+    "coordinates": "102.026768,28.245504"
   },
   {
     "record_id": "recxuIczmF",
-    "latitude": 28.24696,
-    "longitude": 102.029048,
+    "latitude": 28.247059,
+    "longitude": 102.029008,
     "name": "LC-3",
     "location_name_en": "LC-3, Xichang Satellite Launch Center, China",
     "country": "🇨🇳中国",
     "launch_center": "西昌卫星发射中心",
-    "coordinates": "102.029048,28.24696"
+    "coordinates": "102.029008,28.247059"
   },
   {
     "record_id": "recIgfDqIv",
