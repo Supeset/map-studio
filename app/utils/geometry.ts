@@ -147,6 +147,43 @@ export function polygonCentroid(rings: number[][][]): LngLat {
 }
 
 /**
+ * 在反子午线（±180°经线）处把一条折线切成多条独立折线。
+ *
+ * Mapbox / GeoJSON 的 `LineString` 不会跨反子午线绕回,当相邻两点经度从
+ * +179.x 直接跳到 -179.x 时,会被画成一条横穿整张地图的水平线。此函数检测
+ * `|Δlng| > 180` 的跳跃并在该处断开,返回若干条无需绕回的折线段,供渲染时
+ * 各自作为独立 Feature 喂给 line 图层。
+ *
+ * @param coords [lng, lat][] 形式的折线(经度需为 [-180, 180] 归一化值)
+ * @returns 切分后的若干条折线;不足两点时返回空数组
+ */
+export function splitOnAntimeridian(coords: [number, number][]): number[][][] {
+  if (coords.length < 2)
+    return []
+
+  const segments: number[][][] = []
+  let current: number[][] = [coords[0]!]
+
+  for (let k = 1; k < coords.length; k++) {
+    const prev = coords[k - 1]!
+    const next = coords[k]!
+    if (Math.abs(next[0] - prev[0]) > 180) {
+      // 跨越反子午线:结束当前段(并入最后一个点后截断),开启新段
+      if (current.length >= 2)
+        segments.push(current)
+      current = [next]
+    }
+    else {
+      current.push(next)
+    }
+  }
+  if (current.length >= 2)
+    segments.push(current)
+
+  return segments
+}
+
+/**
  * 以 center 为圆心生成圆形 Polygon 的坐标（球面，跨日期线鲁棒）
  */
 export function generateCirclePolygon(

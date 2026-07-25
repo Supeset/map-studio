@@ -15,7 +15,7 @@ import {
   ROCKET_VIS_DYNAMIC_SOURCE,
   ROCKET_VIS_STATIC_SOURCE,
 } from '~/constants/rocket'
-import { generateCirclePolygon } from '~/utils/geometry'
+import { generateCirclePolygon, splitOnAntimeridian } from '~/utils/geometry'
 
 const EMPTY_FC: FeatureCollection = { type: 'FeatureCollection', features: [] }
 
@@ -149,17 +149,21 @@ export function useVisibilityRender(mapInstance: Ref<Map | undefined>) {
 
     const features: Feature[] = []
 
-    features.push({
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: sol.ascent.map(f => f.pos) },
-      properties: { kind: 'ascent' },
-    } as Feature)
-
-    features.push({
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: sol.orbit.groundTrack },
-      properties: { kind: 'orbit' },
-    } as Feature)
+    // 上升段 / 轨道段:在反子午线(±180°)处切分,避免 Mapbox 画出横穿整图的水平线
+    for (const seg of splitOnAntimeridian(sol.ascent.map(f => f.pos))) {
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: seg },
+        properties: { kind: 'ascent' },
+      } as Feature)
+    }
+    for (const seg of splitOnAntimeridian(sol.orbit.groundTrack)) {
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: seg },
+        properties: { kind: 'orbit' },
+      } as Feature)
+    }
 
     // 可见包络(15° / 45° 仰角):上升段所有可见圆的凸包,描边呈现
     const envelope15 = buildVisibilityEnvelope(sol.ascent, 15)

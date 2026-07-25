@@ -7,6 +7,7 @@ import { sampleMissionFrame, solveMission } from '~/composables/rocket/useMissio
 import { useVisibilityRender } from '~/composables/rocket/useVisibilityRender'
 import { findOrbitPreset } from '~/constants/orbit-presets'
 import { DEFAULT_ATMOSPHERIC_VISIBILITY_KM, PADS_POINT_ID } from '~/constants/rocket'
+import { splitOnAntimeridian } from '~/utils/geometry'
 
 export type VisibilityStep = 'idle' | 'select-launch' | 'select-targets' | 'result'
 
@@ -220,15 +221,20 @@ export function useRocketVisibility(
     const m = mission.value
     if (!m)
       return { type: 'FeatureCollection', features: [] }
-    const features: Feature[] = [
-      {
+    const features: Feature[] = []
+
+    // 上升段 / 轨道段:在反子午线(±180°)处切分,导出的 GeoJSON 不再出现横穿整图的线
+    for (const seg of splitOnAntimeridian(m.ascent.map(f => f.pos))) {
+      features.push({
         type: 'Feature',
-        geometry: { type: 'LineString', coordinates: m.ascent.map(f => f.pos) },
+        geometry: { type: 'LineString', coordinates: seg },
         properties: { kind: 'ascent' },
-      } as Feature,
-      {
+      } as Feature)
+    }
+    for (const seg of splitOnAntimeridian(m.orbit.groundTrack)) {
+      features.push({
         type: 'Feature',
-        geometry: { type: 'LineString', coordinates: m.orbit.groundTrack },
+        geometry: { type: 'LineString', coordinates: seg },
         properties: {
           kind: 'orbit',
           inclinationDeg: m.inclinationDeg,
@@ -238,8 +244,8 @@ export function useRocketVisibility(
           eccentricity: m.orbit.eccentricity,
           orbitType: m.orbitPreset.id,
         },
-      } as Feature,
-    ]
+      } as Feature)
+    }
     features.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [m.launch.lng, m.launch.lat] },
