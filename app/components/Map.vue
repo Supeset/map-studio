@@ -14,13 +14,8 @@ function initializeMap() {
     style: mapStore.activeMapStyle.styleUrl,
     center: [108.84, 31.06],
     zoom: 3.5,
-    attributionControl: false, // 隐藏默认的 attribution，或者调整位置以免遮挡
+    attributionControl: false,
   })
-
-  // 添加 attribution 但折叠它，避免与右下角按钮冲突
-  map.addControl(new mapboxgl.AttributionControl({
-    compact: true,
-  }), 'bottom-left')
 
   map.on('load', () => {
     mapStore.setMapInstance(map)

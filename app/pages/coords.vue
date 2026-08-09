@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GeoJSONSource } from 'mapbox-gl'
+import type { GeoJSONSource, MapMouseEvent } from 'mapbox-gl'
 import type { HistoryItem } from '~/components/coords/HistoryPanel.vue'
 import gcoord from 'gcoord'
 import CoordsConverterPanel from '~/components/coords/ConverterPanel.vue'
@@ -28,6 +28,9 @@ const result = ref<{
 
 // 使用 localStorage 持久化历史记录
 const history = useLocalStorage<HistoryItem[]>('coords-history', [])
+
+// 点击选点模式：默认不激活
+const isPickMode = ref(false)
 
 // 解析输入的坐标字符串
 const parsedInput = computed(() => {
@@ -177,6 +180,54 @@ function handleStyleLoad() {
     updateCoords(false)
 }
 
+// --- 点击选点模式 ---
+// Mapbox 点击事件返回的 lngLat 始终是 WGS84
+function handleMapClick(event: MapMouseEvent) {
+  const { lng, lat } = event.lngLat
+  const wgs84Coords = [lng, lat] as [number, number]
+
+  // 将 WGS84 转换为当前所选坐标系，使填充值与坐标类型一致
+  let displayCoords: [number, number]
+  if (inputSourceType.value === 'WGS84') {
+    displayCoords = wgs84Coords
+  }
+  else if (inputSourceType.value === 'GCJ02') {
+    displayCoords = gcoord.transform(wgs84Coords, gcoord.WGS84, gcoord.GCJ02)
+  }
+  else {
+    displayCoords = gcoord.transform(wgs84Coords, gcoord.WGS84, gcoord.BD09)
+  }
+
+  inputStr.value = `${displayCoords[0].toFixed(6)}, ${displayCoords[1].toFixed(6)}`
+}
+
+function bindMapEvents() {
+  mapInstance.value?.on('click', handleMapClick)
+}
+
+function unbindMapEvents() {
+  mapInstance.value?.off('click', handleMapClick)
+}
+
+function togglePickMode() {
+  isPickMode.value = !isPickMode.value
+}
+
+// 激活/停用时切换地图事件与光标样式
+watch(isPickMode, (active) => {
+  const map = mapInstance.value
+  if (!map)
+    return
+  if (active) {
+    bindMapEvents()
+    map.getCanvas().style.cursor = 'crosshair'
+  }
+  else {
+    unbindMapEvents()
+    map.getCanvas().style.cursor = ''
+  }
+})
+
 // Watchers
 // 使用 debounce 避免输入过程中频繁转换和记录
 const debouncedUpdate = useDebounceFn(() => {
@@ -198,10 +249,16 @@ watch(() => isMapLoaded.value, (loaded) => {
     mapInstance.value?.on('style.load', handleStyleLoad)
     if (parsedInput.value)
       updateCoords(false)
+    // 地图加载完成后若选点模式已激活，则补绑事件与光标
+    if (isPickMode.value) {
+      bindMapEvents()
+      mapInstance.value!.getCanvas().style.cursor = 'crosshair'
+    }
   }
 })
 
 onUnmounted(() => {
+  unbindMapEvents()
   mapInstance.value?.off('style.load', handleStyleLoad)
   removeMapLayers()
 })
@@ -218,13 +275,46 @@ onUnmounted(() => {
       <div class="text-xl text-white font-bold pointer-events-auto" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
         坐标转换
       </div>
-      <NuxtLink
-        to="/"
-        class="text-sm px-3 py-2 rounded-full bg-white/80 pointer-events-auto shadow-lg backdrop-blur-sm dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700"
-      >
-        返回主页
-      </NuxtLink>
+      <div class="flex items-center gap-2">
+        <!-- 点击选点开关 -->
+        <button
+          class="text-sm px-3 py-2 rounded-full shadow-lg backdrop-blur-sm pointer-events-auto flex items-center gap-1.5 transition"
+          :class="isPickMode
+            ? 'bg-teal-600 text-white'
+            : 'bg-white/80 text-gray-700 hover:bg-gray-200 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700'"
+          :title="isPickMode ? '关闭点击选点' : '开启点击选点'"
+          @click="togglePickMode"
+        >
+          <div class="i-carbon-location-star text-base" />
+          {{ isPickMode ? '选点中' : '点击选点' }}
+        </button>
+        <NuxtLink
+          to="/"
+          class="text-sm px-3 py-2 rounded-full bg-white/80 pointer-events-auto shadow-lg backdrop-blur-sm dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700"
+        >
+          返回主页
+        </NuxtLink>
+      </div>
     </header>
+
+    <!-- 选点模式提示 -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform -translate-y-4 opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform -translate-y-4 opacity-0"
+    >
+      <div
+        v-if="isPickMode"
+        class="flex pointer-events-none left-0 right-0 top-16 justify-center absolute z-30"
+      >
+        <div class="text-sm text-white/90 tracking-wide font-medium px-6 py-2 border border-teal-400/30 rounded-full bg-teal-600/80 shadow-lg backdrop-blur-md">
+          点击地图任意位置以获取坐标
+        </div>
+      </div>
+    </Transition>
 
     <!-- Right Panels Container -->
     <div class="flex flex-col gap-3 h-65vh w-80 pointer-events-none right-4 top-20 absolute z-20">
