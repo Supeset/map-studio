@@ -19,30 +19,30 @@ catalogs:
     '@nuxt/devtools': ^3.4.1
     '@nuxt/eslint': ^1.17.0
     '@nuxtjs/color-mode': ^4.0.1
-    '@pinia/nuxt': ^1.0.1
-    '@unocss/eslint-config': ^66.7.5
-    '@unocss/nuxt': ^66.7.5
+    '@pinia/nuxt': ^1.0.2
+    '@unocss/eslint-config': ^66.8.0
+    '@unocss/nuxt': ^66.8.0
     '@vite-pwa/nuxt': ^1.1.1
     '@vueuse/nuxt': ^14.4.0
     nuxt: ^4.5.2
-    unocss: ^66.7.5
+    unocss: ^66.8.0
   dev:
     '@antfu/eslint-config': ^9.3.0
     '@types/geojson': ^7946.0.16
     '@types/mapbox__mapbox-gl-draw': ^1.4.9
-    '@unocss/preset-web-fonts': ^66.7.5
+    '@unocss/preset-web-fonts': ^66.8.0
     astronomy-bundle: ^7.7.7
-    dayjs: ^1.11.21
+    dayjs: ^1.11.23
     eslint: ^10.8.1
     eslint-plugin-format: ^2.0.1
     typescript: ^6.0.3
-    vue-tsc: ^3.3.9
+    vue-tsc: ^3.3.10
   frontend:
     '@mapbox/mapbox-gl-draw': ^1.5.1
     '@vueuse/core': ^14.4.0
     gcoord: ^1.0.7
     mapbox-gl: ^3.28.1
-    pinia: ^4.0.2
+    pinia: ^4.0.3
     vue: ^3.5.41
   icons:
     '@iconify-json/carbon': ^1.2.25
