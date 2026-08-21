@@ -270,32 +270,41 @@ onUnmounted(() => {
       <Map />
     </ClientOnly>
 
-    <!-- Header -->
-    <header class="p-4 flex pointer-events-none items-center left-0 right-0 top-0 justify-between absolute z-10">
-      <div class="text-xl text-white font-bold pointer-events-auto" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+    <!-- 左侧：页面标题 + 操作按钮组 -->
+    <div class="flex flex-col gap-2 items-start left-4 top-20 absolute z-20">
+      <div class="text-sm text-gray-700 font-bold px-3 py-1.5 rounded-lg bg-white/90 shadow-xl backdrop-blur-sm dark:text-gray-200 dark:bg-gray-800/90">
         坐标转换
       </div>
-      <div class="flex items-center gap-2">
+
+      <div class="p-2 rounded-lg bg-white/90 flex flex-col gap-2 shadow-xl backdrop-blur-sm dark:bg-gray-800/90">
         <!-- 点击选点开关 -->
         <button
-          class="text-sm px-3 py-2 rounded-full shadow-lg backdrop-blur-sm pointer-events-auto flex items-center gap-1.5 transition"
+          class="p-2 rounded transition relative"
           :class="isPickMode
-            ? 'bg-teal-600 text-white'
-            : 'bg-white/80 text-gray-700 hover:bg-gray-200 dark:bg-gray-800/80 dark:text-gray-200 dark:hover:bg-gray-700'"
+            ? 'text-teal-600 bg-teal-50 dark:text-teal-400 dark:bg-gray-700'
+            : 'text-gray-600 hover:bg-teal-50 dark:text-gray-300 dark:hover:bg-gray-700'"
           :title="isPickMode ? '关闭点击选点' : '开启点击选点'"
           @click="togglePickMode"
         >
-          <div class="i-carbon-location-star text-base" />
-          {{ isPickMode ? '选点中' : '点击选点' }}
+          <div class="i-carbon-location-star text-xl" />
+          <div
+            v-if="isPickMode"
+            class="rounded-full bg-teal-500 h-2 w-2 right-1 top-1 absolute animate-pulse"
+          />
         </button>
+
+        <div class="mx-1 bg-gray-200 h-px dark:bg-gray-700" />
+
+        <!-- 返回主页 -->
         <NuxtLink
           to="/"
-          class="text-sm px-3 py-2 rounded-full bg-white/80 pointer-events-auto shadow-lg backdrop-blur-sm dark:bg-gray-800/80 hover:bg-gray-200 dark:hover:bg-gray-700"
+          class="text-gray-600 p-2 rounded transition dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700"
+          title="返回主页"
         >
-          返回主页
+          <div class="i-carbon-home text-xl" />
         </NuxtLink>
       </div>
-    </header>
+    </div>
 
     <!-- 选点模式提示 -->
     <Transition

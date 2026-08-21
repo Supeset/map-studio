@@ -38,6 +38,9 @@ onUnmounted(() => {
   <div class="h-full w-full relative">
     <div ref="mapContainer" class="inset-0 absolute" />
 
+    <!-- 全局头部（所有含地图的页面共享） -->
+    <TheHeader />
+
     <!-- 左下角工具箱 -->
     <TheToolbox />
   </div>

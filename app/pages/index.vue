@@ -128,7 +128,6 @@ function handleAstroTogglePin() {
     <ClientOnly>
       <Map />
     </ClientOnly>
-    <TheHeader />
 
     <!-- 绘图提示 -->
     <Transition
