@@ -12,6 +12,9 @@ defineOptions({
 const mapStore = useMapStore()
 const { mapInstance, isMapLoaded } = storeToRefs(mapStore)
 
+const uiStore = useUiStore()
+const { isRightPanelsVisible } = storeToRefs(uiStore)
+
 // Mapbox 相关常量
 const SOURCE_ID = 'coords-point-source'
 const LAYER_ID_POINT = 'coords-point-layer'
@@ -326,21 +329,33 @@ onUnmounted(() => {
     </Transition>
 
     <!-- Right Panels Container -->
-    <div class="flex flex-col gap-3 h-65vh w-80 pointer-events-none right-4 top-20 absolute z-20">
-      <!-- 1. Converter Panel -->
-      <CoordsConverterPanel
-        v-model:input-str="inputStr"
-        v-model:source-type="inputSourceType"
-        :result="result"
-        :is-valid="!!parsedInput"
-      />
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform translate-x-6 opacity-0"
+      enter-to-class="transform translate-x-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="transform translate-x-0 opacity-100"
+      leave-to-class="transform translate-x-6 opacity-0"
+    >
+      <div
+        v-if="isRightPanelsVisible"
+        class="flex flex-col gap-3 h-65vh w-80 pointer-events-none right-4 top-20 absolute z-20"
+      >
+        <!-- 1. Converter Panel -->
+        <CoordsConverterPanel
+          v-model:input-str="inputStr"
+          v-model:source-type="inputSourceType"
+          :result="result"
+          :is-valid="!!parsedInput"
+        />
 
-      <!-- 2. History Panel -->
-      <CoordsHistoryPanel
-        :history="history"
-        @restore="restoreHistory"
-        @clear="clearHistory"
-      />
-    </div>
+        <!-- 2. History Panel -->
+        <CoordsHistoryPanel
+          :history="history"
+          @restore="restoreHistory"
+          @clear="clearHistory"
+        />
+      </div>
+    </Transition>
   </div>
 </template>

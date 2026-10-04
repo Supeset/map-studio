@@ -6,6 +6,14 @@ import { createSun } from 'astronomy-bundle/sun'
 import { createTimeOfInterest } from 'astronomy-bundle/time'
 import dayjs from 'dayjs'
 
+export type AstroParallelGroup = 'equator' | 'tropics' | 'subsolar'
+
+const TROPIC_LAT = 23.4366
+
+function formatLatitude(lat: number): string {
+  return `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}`
+}
+
 export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref<boolean>) {
   const isActive = ref(false)
   const isPinned = ref(false)
@@ -20,10 +28,22 @@ export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref
     solarNoonTime: string
   } | null>(null)
 
+  const showEquator = ref(true)
+  const showTropics = ref(true)
+  const showSubsolar = ref(true)
+  const subsolarLat = ref<number | null>(null)
+
   const SOURCE_ID = 'astro-features'
   const POINT_LAYER_ID = 'astro-point-layer'
   const LINE_LAYER_ID = 'astro-line-layer'
   const LABEL_LAYER_ID = 'astro-label-layer'
+
+  const PARALLEL_SOURCE_ID = 'astro-parallels'
+  const PARALLEL_LAYERS: Record<AstroParallelGroup, { line: string, label: string }> = {
+    equator: { line: 'astro-equator-line', label: 'astro-equator-label' },
+    tropics: { line: 'astro-tropics-line', label: 'astro-tropics-label' },
+    subsolar: { line: 'astro-subsolar-line', label: 'astro-subsolar-label' },
+  }
 
   function calculateDestinationPoint(
     start: { lng: number, lat: number },
@@ -229,6 +249,183 @@ export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref
       map.removeSource(SOURCE_ID)
   }
 
+  async function getSubsolarLatitude(): Promise<number> {
+    const toi = createTimeOfInterest.fromCurrentTime()
+    const sun = createSun(toi)
+    const { declination } = await sun.getApparentGeocentricEquatorialSphericalCoordinates()
+    return declination
+  }
+
+  function applyParallelVisibility(group: AstroParallelGroup) {
+    const map = mapInstance.value
+    if (!map)
+      return
+
+    const visible = group === 'equator'
+      ? showEquator.value
+      : group === 'tropics'
+        ? showTropics.value
+        : showSubsolar.value
+    const { line, label } = PARALLEL_LAYERS[group]
+
+    for (const id of [line, label]) {
+      if (map.getLayer(id))
+        map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none')
+    }
+  }
+
+  function toggleParallel(group: AstroParallelGroup) {
+    if (group === 'equator')
+      showEquator.value = !showEquator.value
+    else if (group === 'tropics')
+      showTropics.value = !showTropics.value
+    else
+      showSubsolar.value = !showSubsolar.value
+
+    applyParallelVisibility(group)
+  }
+
+  function removeParallelLayers() {
+    const map = mapInstance.value
+    if (!map)
+      return
+
+    Object.values(PARALLEL_LAYERS)
+      .flatMap(({ line, label }) => [label, line])
+      .forEach((id) => {
+        if (map.getLayer(id))
+          map.removeLayer(id)
+      })
+
+    if (map.getSource(PARALLEL_SOURCE_ID))
+      map.removeSource(PARALLEL_SOURCE_ID)
+  }
+
+  async function initParallelLayers() {
+    const map = mapInstance.value
+    if (!map || !isMapLoaded.value)
+      return
+
+    if (subsolarLat.value === null) {
+      try {
+        subsolarLat.value = await getSubsolarLatitude()
+      }
+      catch (e) {
+        console.error('太阳赤纬计算失败:', e)
+        subsolarLat.value = 0
+      }
+    }
+
+    if (!isActive.value || mapInstance.value !== map)
+      return
+
+    const declination = subsolarLat.value
+
+    function createParallelFeature(type: string, group: AstroParallelGroup, lat: number, text: string) {
+      return {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [[-180, lat], [180, lat]] },
+        properties: { type, group, text },
+      }
+    }
+
+    const geojson: FeatureCollection = {
+      type: 'FeatureCollection',
+      features: [
+        createParallelFeature('equator', 'equator', 0, '赤道 0°'),
+        createParallelFeature('tropic-cancer', 'tropics', TROPIC_LAT, `北回归线 ${formatLatitude(TROPIC_LAT)}`),
+        createParallelFeature('tropic-capricorn', 'tropics', -TROPIC_LAT, `南回归线 ${formatLatitude(-TROPIC_LAT)}`),
+        createParallelFeature('subsolar', 'subsolar', declination, `太阳直射线 ${formatLatitude(declination)}`),
+      ] as any,
+    }
+
+    removeParallelLayers()
+
+    map.addSource(PARALLEL_SOURCE_ID, { type: 'geojson', data: geojson })
+
+    map.addLayer({
+      id: PARALLEL_LAYERS.equator.line,
+      type: 'line',
+      source: PARALLEL_SOURCE_ID,
+      filter: ['==', ['get', 'type'], 'equator'],
+      layout: { 'line-cap': 'round' },
+      paint: {
+        'line-color': '#ef4444',
+        'line-width': 2,
+      },
+    })
+    map.addLayer({
+      id: PARALLEL_LAYERS.equator.label,
+      type: 'symbol',
+      source: PARALLEL_SOURCE_ID,
+      filter: ['==', ['get', 'type'], 'equator'],
+      layout: {
+        'symbol-placement': 'line',
+        'symbol-spacing': 400,
+        'text-field': ['get', 'text'],
+        'text-size': 12,
+        'text-letter-spacing': 0.1,
+      },
+      paint: { 'text-color': '#ef4444', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+    })
+
+    map.addLayer({
+      id: PARALLEL_LAYERS.tropics.line,
+      type: 'line',
+      source: PARALLEL_SOURCE_ID,
+      filter: ['==', ['get', 'group'], 'tropics'],
+      paint: {
+        'line-color': '#38bdf8',
+        'line-width': 1.5,
+        'line-dasharray': [2, 2],
+      },
+    })
+    map.addLayer({
+      id: PARALLEL_LAYERS.tropics.label,
+      type: 'symbol',
+      source: PARALLEL_SOURCE_ID,
+      filter: ['==', ['get', 'group'], 'tropics'],
+      layout: {
+        'symbol-placement': 'line',
+        'symbol-spacing': 400,
+        'text-field': ['get', 'text'],
+        'text-size': 12,
+        'text-letter-spacing': 0.1,
+      },
+      paint: { 'text-color': '#38bdf8', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+    })
+
+    map.addLayer({
+      id: PARALLEL_LAYERS.subsolar.line,
+      type: 'line',
+      source: PARALLEL_SOURCE_ID,
+      filter: ['==', ['get', 'type'], 'subsolar'],
+      layout: { 'line-cap': 'round' },
+      paint: {
+        'line-color': '#facc15',
+        'line-width': 2.5,
+        'line-opacity': 0.95,
+      },
+    })
+    map.addLayer({
+      id: PARALLEL_LAYERS.subsolar.label,
+      type: 'symbol',
+      source: PARALLEL_SOURCE_ID,
+      filter: ['==', ['get', 'type'], 'subsolar'],
+      layout: {
+        'symbol-placement': 'line',
+        'symbol-spacing': 400,
+        'text-field': ['get', 'text'],
+        'text-size': 12,
+        'text-letter-spacing': 0.1,
+      },
+      paint: { 'text-color': '#facc15', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+    })
+
+    for (const group of Object.keys(PARALLEL_LAYERS) as AstroParallelGroup[])
+      applyParallelVisibility(group)
+  }
+
   async function calculateAstroInfo(lat: number, lon: number) {
     isLoading.value = true
     astroInfo.value = null
@@ -287,6 +484,8 @@ export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref
   function handleStyleLoad() {
     if (selectedPoint.value)
       calculateAstroInfo(selectedPoint.value.lat, selectedPoint.value.lng)
+    if (isActive.value)
+      initParallelLayers()
   }
 
   function bindEvents() {
@@ -307,13 +506,16 @@ export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref
 
   function activate() {
     isActive.value = true
-    if (isMapLoaded.value)
+    if (isMapLoaded.value) {
       bindEvents()
+      initParallelLayers()
+    }
   }
 
   function deactivate() {
     isActive.value = false
     unbindEvents()
+    removeParallelLayers()
     if (!isPinned.value)
       clearResult()
   }
@@ -327,13 +529,16 @@ export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref
   }
 
   watch(isMapLoaded, (loaded) => {
-    if (loaded && isActive.value)
+    if (loaded && isActive.value) {
       bindEvents()
+      initParallelLayers()
+    }
   })
 
   onUnmounted(() => {
     unbindEvents()
     removeMapLayers()
+    removeParallelLayers()
   })
 
   return {
@@ -343,8 +548,13 @@ export function useAstroTool(mapInstance: Ref<Map | undefined>, isMapLoaded: Ref
     selectedPoint,
     calculationError,
     astroInfo,
+    showEquator,
+    showTropics,
+    showSubsolar,
+    subsolarLat,
     activate,
     deactivate,
     clearResult,
+    toggleParallel,
   }
 }

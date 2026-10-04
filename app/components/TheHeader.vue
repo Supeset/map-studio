@@ -10,6 +10,9 @@ const lastUserLocation = ref<[number, number] | null>(null)
 const mapStore = useMapStore()
 const { mapInstance } = storeToRefs(mapStore)
 
+const uiStore = useUiStore()
+const { isRightPanelsVisible } = storeToRefs(uiStore)
+
 function drawUserLocation(lng: number, lat: number) {
   const map = mapInstance.value
   if (!map)
@@ -124,6 +127,15 @@ watch(mapInstance, (map) => {
 
     <!-- 右侧：全局功能按钮组 -->
     <div class="flex gap-1 pointer-events-auto items-center">
+      <!-- 右侧面板显示/隐藏 -->
+      <button
+        class="header-icon-btn"
+        :title="isRightPanelsVisible ? '隐藏右侧面板' : '显示右侧面板'"
+        @click="uiStore.toggleRightPanels()"
+      >
+        <div class="text-xl" :class="isRightPanelsVisible ? 'i-carbon-right-panel-close' : 'i-carbon-right-panel-open'" />
+      </button>
+
       <!-- 定位按钮 -->
       <button
         class="header-icon-btn"

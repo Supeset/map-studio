@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AstroInfoPanel from '~/components/astro/InfoPanel.vue'
+import AstroParallelLinesPanel from '~/components/astro/ParallelLinesPanel.vue'
 import DrawFeatureListPanel from '~/components/draw/FeatureListPanel.vue'
 import DrawGeoJsonPanel from '~/components/draw/GeoJsonPanel.vue'
 import DrawPropertiesPanel from '~/components/draw/PropertiesPanel.vue'
@@ -15,6 +16,9 @@ defineOptions({
 const mapStore = useMapStore()
 const { mapInstance, isMapLoaded } = storeToRefs(mapStore)
 
+const uiStore = useUiStore()
+const { isRightPanelsVisible } = storeToRefs(uiStore)
+
 const {
   isActive: isAstroActive,
   isPinned: isAstroPinned,
@@ -22,9 +26,14 @@ const {
   selectedPoint: astroSelectedPoint,
   calculationError: astroCalcError,
   astroInfo,
+  showEquator: astroShowEquator,
+  showTropics: astroShowTropics,
+  showSubsolar: astroShowSubsolar,
+  subsolarLat: astroSubsolarLat,
   activate: activateAstro,
   deactivate: deactivateAstro,
   clearResult: clearAstroResult,
+  toggleParallel: toggleAstroParallel,
 } = useAstroTool(mapInstance, isMapLoaded)
 
 const { visible: isRocketVisible, padsData, landingData, handleSelectPad, handleSelectLanding, toggleVisibility: toggleRocket } = useRocketTool(mapInstance, isMapLoaded)
@@ -167,6 +176,25 @@ function handleAstroTogglePin() {
       </div>
     </Transition>
 
+    <!-- 天文纬线标注开关 -->
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform -translate-y-4 opacity-0"
+      enter-to-class="transform translate-y-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="transform translate-y-0 opacity-100"
+      leave-to-class="transform -translate-y-4 opacity-0"
+    >
+      <AstroParallelLinesPanel
+        v-if="isAstroActive"
+        :show-equator="astroShowEquator"
+        :show-tropics="astroShowTropics"
+        :show-subsolar="astroShowSubsolar"
+        :subsolar-lat="astroSubsolarLat"
+        @toggle="toggleAstroParallel"
+      />
+    </Transition>
+
     <!-- 左侧绘图工具栏 -->
     <DrawToolbar
       :model-value="currentMode"
@@ -178,51 +206,63 @@ function handleAstroTogglePin() {
     />
 
     <!-- 右侧面板容器 -->
-    <div class="flex flex-col gap-3 w-80 pointer-events-none bottom-4 right-4 top-16 absolute z-20">
-      <div class="pr-1 flex flex-col gap-3 h-full pointer-events-auto overflow-y-auto">
-        <!-- 火箭面板 -->
-        <template v-if="isRocketVisible">
-          <RocketListPanel
-            :pads="padsData"
-            @select="handleSelectPad"
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="transform translate-x-6 opacity-0"
+      enter-to-class="transform translate-x-0 opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="transform translate-x-0 opacity-100"
+      leave-to-class="transform translate-x-6 opacity-0"
+    >
+      <div
+        v-if="isRightPanelsVisible"
+        class="flex flex-col gap-3 w-80 pointer-events-none bottom-4 right-4 top-16 absolute z-20"
+      >
+        <div class="pr-1 flex flex-col gap-3 h-full pointer-events-auto overflow-y-auto">
+          <!-- 火箭面板 -->
+          <template v-if="isRocketVisible">
+            <RocketListPanel
+              :pads="padsData"
+              @select="handleSelectPad"
+            />
+            <LandingListPanel
+              :sites="landingData"
+              @select="handleSelectLanding"
+            />
+          </template>
+
+          <!-- 图形列表 -->
+          <DrawFeatureListPanel
+            :features="savedFeatures.features"
+            :selected-feature-id="selectedFeatureId"
+            @select="selectFeature"
+            @focus="focusFeature"
+            @toggle-visibility="toggleFeatureVisibility"
+            @delete="deleteFeature"
+            @clear-all="clearAll"
           />
-          <LandingListPanel
-            :sites="landingData"
-            @select="handleSelectLanding"
+
+          <!-- 绘图属性面板 -->
+          <DrawPropertiesPanel
+            :feature-id="selectedFeatureId"
+            :feature-props="selectedFeatureProps"
+            :feature-geometry-type="selectedTypeLabel"
+            @delete="deleteSelected"
+            @update-property="updateFeatureProperty"
+            @remove-property="removeProperty"
+            @add-default-styles="addDefaultStyles"
           />
-        </template>
 
-        <!-- 图形列表 -->
-        <DrawFeatureListPanel
-          :features="savedFeatures.features"
-          :selected-feature-id="selectedFeatureId"
-          @select="selectFeature"
-          @focus="focusFeature"
-          @toggle-visibility="toggleFeatureVisibility"
-          @delete="deleteFeature"
-          @clear-all="clearAll"
-        />
-
-        <!-- 绘图属性面板 -->
-        <DrawPropertiesPanel
-          :feature-id="selectedFeatureId"
-          :feature-props="selectedFeatureProps"
-          :feature-geometry-type="selectedTypeLabel"
-          @delete="deleteSelected"
-          @update-property="updateFeatureProperty"
-          @remove-property="removeProperty"
-          @add-default-styles="addDefaultStyles"
-        />
-
-        <!-- GeoJSON 数据面板 -->
-        <DrawGeoJsonPanel
-          :features="savedFeatures"
-          :selected-feature-id="selectedFeatureId"
-          :selected-feature-json="selectedFeatureJson"
-          @import="handleImportGeoJson"
-        />
+          <!-- GeoJSON 数据面板 -->
+          <DrawGeoJsonPanel
+            :features="savedFeatures"
+            :selected-feature-id="selectedFeatureId"
+            :selected-feature-json="selectedFeatureJson"
+            @import="handleImportGeoJson"
+          />
+        </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- 天文信息底部卡片 -->
     <AstroInfoPanel
